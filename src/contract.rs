@@ -63,7 +63,10 @@ impl Contract for ApplicationContract {
             .send_to(creator_chain);
     }
 
-    async fn execute_message(&mut self, _message: Self::Message) {}
+    /// Checks that an `airdrop` hasn't been handled before, and if so delivers its tokens.
+    async fn execute_message(&mut self, airdrop: Self::Message) {
+        self.track_claim(&airdrop.id).await;
+    }
 
     async fn store(mut self) {
         self.state.save().await.expect("Failed to save state");
@@ -74,6 +77,24 @@ impl ApplicationContract {
     /// Calculates the [`Amount`] to be airdropped for one [`AirDropClaim`].
     async fn airdrop_amount(&mut self, _claim: &AirDropClaim) -> Amount {
         Amount::ONE
+    }
+
+    /// Tracks a claim, aborting the execution if it has already been handled.
+    async fn track_claim(&mut self, airdrop: &AirDropId) {
+        assert!(
+            !self
+                .state
+                .handled_airdrops
+                .contains(airdrop)
+                .await
+                .expect("Failed to read handled claims from storage"),
+            "Airdrop has already been paid"
+        );
+
+        self.state
+            .handled_airdrops
+            .insert(airdrop)
+            .expect("Failed to write handled claim to storage");
     }
 }
 
