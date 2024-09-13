@@ -1,11 +1,12 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use linera_sdk::views::{linera_views, RegisterView, RootView, ViewStorageContext};
+use airdrop_demo::AirDropId;
+use linera_sdk::views::{linera_views, RootView, SetView, ViewStorageContext};
 
+/// The application state.
 #[derive(RootView, async_graphql::SimpleObject)]
 #[view(context = "ViewStorageContext")]
 pub struct Application {
-    pub value: RegisterView<u64>,
-    // Add fields here.
+    pub handled_airdrops: SetView<AirDropId>,
 }

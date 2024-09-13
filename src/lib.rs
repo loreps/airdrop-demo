@@ -24,3 +24,9 @@ impl ServiceAbi for ApplicationAbi {
 pub struct Parameters {
     pub token_id: ApplicationId<FungibleTokenAbi>,
 }
+
+/// The information necessary to identify an airdrop.
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, async_graphql::SimpleObject)]
+pub struct AirDropId {
+    external_address: Vec<u8>,
+}
