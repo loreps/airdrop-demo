@@ -6,6 +6,7 @@
 mod state;
 
 use self::state::Application;
+use airdrop_demo::Parameters;
 use linera_sdk::{base::WithServiceAbi, views::View, Service, ServiceRuntime};
 
 pub struct ApplicationService {
@@ -20,7 +21,7 @@ impl WithServiceAbi for ApplicationService {
 }
 
 impl Service for ApplicationService {
-    type Parameters = ();
+    type Parameters = Parameters;
 
     async fn new(runtime: ServiceRuntime<Self>) -> Self {
         let state = Application::load(runtime.root_view_storage_context())

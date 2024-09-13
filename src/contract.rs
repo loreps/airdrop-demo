@@ -5,6 +5,7 @@
 
 mod state;
 
+use airdrop_demo::Parameters;
 use linera_sdk::{
     base::WithContractAbi,
     views::{RootView, View},
@@ -26,7 +27,7 @@ impl WithContractAbi for ApplicationContract {
 
 impl Contract for ApplicationContract {
     type Message = ();
-    type Parameters = ();
+    type Parameters = Parameters;
     type InstantiationArgument = ();
 
     async fn load(runtime: ContractRuntime<Self>) -> Self {
@@ -36,7 +37,13 @@ impl Contract for ApplicationContract {
         ApplicationContract { state, runtime }
     }
 
-    async fn instantiate(&mut self, _argument: Self::InstantiationArgument) {}
+    /// Instantiates the application.
+    ///
+    /// Fails if the [`Parameters`] specified to create the application are invalid.
+    async fn instantiate(&mut self, _argument: Self::InstantiationArgument) {
+        // Fetch the parameters to check that they can be successfully deserialized.
+        let _parameters = self.runtime.application_parameters();
+    }
 
     async fn execute_operation(&mut self, _operation: Self::Operation) -> Self::Response {}
 
