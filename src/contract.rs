@@ -5,7 +5,7 @@
 
 mod state;
 
-use airdrop_demo::{AirDropId, Parameters};
+use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
 use linera_sdk::{
     abis::fungible::{self, Account},
     base::{AccountOwner, Amount, WithContractAbi},
@@ -55,6 +55,13 @@ impl Contract for ApplicationContract {
 
     async fn store(mut self) {
         self.state.save().await.expect("Failed to save state");
+    }
+}
+
+impl ApplicationContract {
+    /// Calculates the [`Amount`] to be airdropped for one [`AirDropClaim`].
+    async fn airdrop_amount(&mut self, _claim: &AirDropClaim) -> Amount {
+        Amount::ONE
     }
 }
 
