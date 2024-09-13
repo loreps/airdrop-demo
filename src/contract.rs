@@ -49,7 +49,19 @@ impl Contract for ApplicationContract {
 
     /// Verifies an [`AirDropClaim`][`zk_airdrop_demo::AirDropClaim`] and if approved, sends a
     /// message to the application's creator chain to ask the tokens to be delivered.
-    async fn execute_operation(&mut self, claim: Self::Operation) -> Self::Response {}
+    async fn execute_operation(&mut self, claim: Self::Operation) -> Self::Response {
+        let creator_chain = self.runtime.application_creator_chain_id();
+        let amount = self.airdrop_amount(&claim).await;
+
+        self.runtime
+            .prepare_message(ApprovedAirDrop {
+                id: claim.id,
+                amount,
+                destination: claim.destination,
+            })
+            .with_authentication()
+            .send_to(creator_chain);
+    }
 
     async fn execute_message(&mut self, _message: Self::Message) {}
 
