@@ -66,6 +66,18 @@ impl Contract for ApplicationContract {
     /// Checks that an `airdrop` hasn't been handled before, and if so delivers its tokens.
     async fn execute_message(&mut self, airdrop: Self::Message) {
         self.track_claim(&airdrop.id).await;
+
+        let parameters = self.runtime.application_parameters();
+        let source_account = AccountOwner::Application(self.runtime.application_id().forget_abi());
+
+        let transfer = fungible::Operation::Transfer {
+            owner: source_account,
+            amount: airdrop.amount,
+            target_account: airdrop.destination,
+        };
+
+        self.runtime
+            .call_application(true, parameters.token_id, &transfer);
     }
 
     async fn store(mut self) {
