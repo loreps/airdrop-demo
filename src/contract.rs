@@ -45,7 +45,9 @@ impl Contract for ApplicationContract {
         let _parameters = self.runtime.application_parameters();
     }
 
-    async fn execute_operation(&mut self, _operation: Self::Operation) -> Self::Response {}
+    /// Verifies an [`AirDropClaim`][`zk_airdrop_demo::AirDropClaim`] and if approved, sends a
+    /// message to the application's creator chain to ask the tokens to be delivered.
+    async fn execute_operation(&mut self, claim: Self::Operation) -> Self::Response {}
 
     async fn execute_message(&mut self, _message: Self::Message) {}
 

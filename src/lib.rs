@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use linera_sdk::{
-    abis::fungible::FungibleTokenAbi,
+    abis::fungible::{Account, FungibleTokenAbi},
     base::{ApplicationId, ContractAbi, ServiceAbi},
 };
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 pub struct ApplicationAbi;
 
 impl ContractAbi for ApplicationAbi {
-    type Operation = ();
+    type Operation = AirDropClaim;
     type Response = ();
 }
 
@@ -29,4 +29,11 @@ pub struct Parameters {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, async_graphql::SimpleObject)]
 pub struct AirDropId {
     external_address: Vec<u8>,
+}
+
+/// An airdrop claim.
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, async_graphql::SimpleObject)]
+pub struct AirDropClaim {
+    pub id: AirDropId,
+    pub destination: Account,
 }
