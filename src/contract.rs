@@ -5,12 +5,14 @@
 
 mod state;
 
-use airdrop_demo::Parameters;
+use airdrop_demo::{AirDropId, Parameters};
 use linera_sdk::{
-    base::WithContractAbi,
+    abis::fungible::{self, Account},
+    base::{AccountOwner, Amount, WithContractAbi},
     views::{RootView, View},
     Contract, ContractRuntime,
 };
+use serde::{Deserialize, Serialize};
 
 use self::state::Application;
 
@@ -26,7 +28,7 @@ impl WithContractAbi for ApplicationContract {
 }
 
 impl Contract for ApplicationContract {
-    type Message = ();
+    type Message = ApprovedAirDrop;
     type Parameters = Parameters;
     type InstantiationArgument = ();
 
@@ -54,4 +56,13 @@ impl Contract for ApplicationContract {
     async fn store(mut self) {
         self.state.save().await.expect("Failed to save state");
     }
+}
+
+/// An airdrop claim that has been approved and sent back to the creator chain to deliver the
+/// tokens.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ApprovedAirDrop {
+    id: AirDropId,
+    amount: Amount,
+    destination: Account,
 }
