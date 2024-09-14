@@ -31,6 +31,17 @@ pub struct AirDropId {
     external_address: Vec<u8>,
 }
 
+impl<AnyAddress> From<AnyAddress> for AirDropId
+where
+    AnyAddress: Into<Vec<u8>>,
+{
+    fn from(address: AnyAddress) -> Self {
+        AirDropId {
+            external_address: address.into(),
+        }
+    }
+}
+
 /// An airdrop claim.
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, async_graphql::SimpleObject)]
 pub struct AirDropClaim {
