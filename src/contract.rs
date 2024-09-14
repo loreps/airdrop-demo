@@ -3,6 +3,8 @@
 
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
+#[cfg(test)]
+mod contract_unit_tests;
 mod state;
 
 use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
@@ -113,6 +115,7 @@ impl ApplicationContract {
 /// An airdrop claim that has been approved and sent back to the creator chain to deliver the
 /// tokens.
 #[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(test, derive(Eq, PartialEq))]
 pub struct ApprovedAirDrop {
     id: AirDropId,
     amount: Amount,
