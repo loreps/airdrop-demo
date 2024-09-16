@@ -115,7 +115,7 @@ impl ApplicationContract {
 /// An airdrop claim that has been approved and sent back to the creator chain to deliver the
 /// tokens.
 #[derive(Debug, Deserialize, Serialize)]
-#[cfg_attr(test, derive(Eq, PartialEq))]
+#[cfg_attr(test, derive(Clone, Eq, PartialEq))]
 pub struct ApprovedAirDrop {
     id: AirDropId,
     amount: Amount,

@@ -21,7 +21,7 @@ use super::{state::Application, ApplicationContract, ApprovedAirDrop};
 fn accepts_new_claim() {
     let mut contract = create_and_instantiate_contract();
     let airdrop_id = AirDropId::from(b"airdrop");
-    let destination_account = create_dummy_destination();
+    let destination_account = create_dummy_destination(0);
 
     let claim = AirDropClaim {
         id: airdrop_id.clone(),
@@ -54,7 +54,7 @@ fn pays_accepted_airdrop() {
     let mut contract = create_and_instantiate_contract();
     let airdrop_id = AirDropId::from(b"airdrop");
     let amount = Amount::from_tokens(11);
-    let destination = create_dummy_destination();
+    let destination = create_dummy_destination(0);
 
     let airdrop = ApprovedAirDrop {
         id: airdrop_id,
@@ -83,6 +83,52 @@ fn pays_accepted_airdrop() {
     );
 
     let () = contract.execute_message(airdrop).blocking_wait();
+}
+
+/// Tests if the same airdrop pays the claimer once.
+#[test]
+#[should_panic(expected = "Airdrop has already been paid")]
+fn rejects_repeated_airdrop() {
+    let mut contract = create_and_instantiate_contract();
+    let airdrop_id = AirDropId::from(b"airdrop");
+    let amount = Amount::from_tokens(11);
+    let first_destination = create_dummy_destination(0);
+    let second_destination = create_dummy_destination(1);
+
+    let first_claim = ApprovedAirDrop {
+        id: airdrop_id.clone(),
+        amount,
+        destination: first_destination,
+    };
+
+    let second_claim = ApprovedAirDrop {
+        id: airdrop_id,
+        amount: Amount::ONE,
+        destination: second_destination,
+    };
+
+    let application_id = contract.runtime.application_id();
+
+    contract.runtime.set_call_application_handler(
+        move |is_authenticated, target_application, operation| {
+            assert!(is_authenticated);
+            assert_eq!(target_application, create_dummy_token_id());
+            assert_eq!(
+                operation,
+                bcs::to_bytes(&fungible::Operation::Transfer {
+                    owner: AccountOwner::Application(application_id.forget_abi()),
+                    amount,
+                    target_account: first_destination,
+                })
+                .expect("`ApprovedAirDrop` message should be serializable")
+            );
+
+            bcs::to_bytes(&FungibleResponse::Ok).expect("Unit type should be serializable")
+        },
+    );
+
+    let () = contract.execute_message(first_claim).blocking_wait();
+    let () = contract.execute_message(second_claim).blocking_wait();
 }
 
 /// Creates an [`ApplicationContract`] instance and calls `instantiate` on it.
@@ -132,9 +178,11 @@ fn create_dummy_application_id<Abi>(name: &str, index: u32) -> ApplicationId<Abi
 }
 
 /// Creates a dummy [`Account`] to use as a test destination for the airdropped tokens.
-fn create_dummy_destination() -> Account {
+fn create_dummy_destination(index: usize) -> Account {
     Account {
-        chain_id: ChainId(CryptoHash::test_hash("destination chain")),
-        owner: AccountOwner::User(Owner(CryptoHash::test_hash("destination owner"))),
+        chain_id: ChainId(CryptoHash::test_hash(format!("destination chain {index}"))),
+        owner: AccountOwner::User(Owner(CryptoHash::test_hash(format!(
+            "destination owner {index}"
+        )))),
     }
 }
