@@ -63,6 +63,38 @@ async fn pays_valid_claim() {
     assert_eq!(airdrop_balance, Some(initial_tokens - claim_amount));
 }
 
+/// Tests if an attempt to replay a claim in the same block is rejected.
+#[tokio::test]
+#[should_panic]
+async fn rejects_replay_attacks_in_the_same_block() {
+    let initial_tokens = Amount::from_tokens(100);
+    let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
+        setup(initial_tokens).await;
+
+    let airdrop_id = AirDropId::from(b"airdrop");
+
+    let claimer_chain = validator.new_chain().await;
+    let claimer_account = fungible::Account {
+        chain_id: claimer_chain.id(),
+        owner: AccountOwner::from(claimer_chain.public_key()),
+    };
+
+    let claim = AirDropClaim {
+        id: airdrop_id,
+        destination: claimer_account,
+    };
+
+    claimer_chain.register_application(application_id).await;
+    claimer_chain
+        .add_block(|block| {
+            block
+                .with_operation(application_id, claim.clone())
+                .with_operation(application_id, claim);
+        })
+        .await;
+    airdrop_chain.handle_received_messages().await;
+}
+
 /// Configures the test environment, deploying the airdrop application with some newly minted
 /// tokens.
 async fn setup(
