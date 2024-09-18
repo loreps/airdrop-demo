@@ -63,6 +63,64 @@ async fn pays_valid_claim() {
     assert_eq!(airdrop_balance, Some(initial_tokens - claim_amount));
 }
 
+/// Tests if multiple valid [`AirDropClaim`]s are properly paid.
+#[tokio::test]
+async fn pays_multiple_claims() {
+    let initial_tokens = Amount::from_tokens(10);
+    let (validator, airdrop_chain, airdrop_account, token_id, application_id) =
+        setup(initial_tokens).await;
+
+    for claim_index in 1..=10 {
+        let claimer_chain = validator.new_chain().await;
+        let claim_amount = Amount::ONE;
+        let claimer_account = fungible::Account {
+            chain_id: claimer_chain.id(),
+            owner: AccountOwner::from(claimer_chain.public_key()),
+        };
+
+        claimer_chain.register_application(application_id).await;
+
+        let claim_certificate = claimer_chain
+            .add_block(|block| {
+                block.with_operation(
+                    application_id,
+                    AirDropClaim {
+                        id: AirDropId::from(format!("airdrop #{claim_index}").as_bytes()),
+                        destination: claimer_account,
+                    },
+                );
+            })
+            .await;
+
+        assert_eq!(claim_certificate.outgoing_message_count(), 2);
+
+        let payment_certificate = airdrop_chain
+            .add_block(|block| {
+                block.with_messages_from(&claim_certificate);
+            })
+            .await;
+
+        assert_eq!(payment_certificate.outgoing_message_count(), 2);
+
+        let receipt_certificate = claimer_chain
+            .add_block(|block| {
+                block.with_messages_from(&payment_certificate);
+            })
+            .await;
+
+        assert_eq!(receipt_certificate.outgoing_message_count(), 0);
+
+        let airdrop_balance = query_balance(token_id, &airdrop_chain, airdrop_account.owner).await;
+        let claimer_balance = query_balance(token_id, &claimer_chain, claimer_account.owner).await;
+
+        assert_eq!(claimer_balance, Some(claim_amount));
+        assert_eq!(
+            airdrop_balance.unwrap_or(Amount::ZERO),
+            initial_tokens - claim_amount * claim_index
+        );
+    }
+}
+
 /// Tests if an attempt to replay a claim in the same block is rejected.
 #[tokio::test]
 #[should_panic]
