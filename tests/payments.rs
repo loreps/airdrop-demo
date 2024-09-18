@@ -132,6 +132,43 @@ async fn rejects_replay_attacks_in_the_same_chain() {
     airdrop_chain.handle_received_messages().await;
 }
 
+/// Tests if an attempt to replain a claim in a different chain is rejected.
+#[tokio::test]
+#[should_panic]
+async fn rejects_replay_attacks_in_different_chains() {
+    let initial_tokens = Amount::from_tokens(100);
+    let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
+        setup(initial_tokens).await;
+
+    let claimer_chain = validator.new_chain().await;
+    let claimer_account = fungible::Account {
+        chain_id: claimer_chain.id(),
+        owner: AccountOwner::from(claimer_chain.public_key()),
+    };
+
+    let claim = AirDropClaim {
+        id: AirDropId::from(b"airdrop"),
+        destination: claimer_account,
+    };
+
+    claimer_chain.register_application(application_id).await;
+    claimer_chain
+        .add_block(|block| {
+            block.with_operation(application_id, claim.clone());
+        })
+        .await;
+    airdrop_chain.handle_received_messages().await;
+
+    let attacker_chain = validator.new_chain().await;
+
+    attacker_chain
+        .add_block(|block| {
+            block.with_operation(application_id, claim);
+        })
+        .await;
+    airdrop_chain.handle_received_messages().await;
+}
+
 /// Configures the test environment, deploying the airdrop application with some newly minted
 /// tokens.
 async fn setup(
