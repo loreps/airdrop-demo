@@ -169,6 +169,56 @@ async fn rejects_replay_attacks_in_different_chains() {
     airdrop_chain.handle_received_messages().await;
 }
 
+/// Tests if airdrop claims are rejected when the airdrop account is empty.
+#[tokio::test]
+#[should_panic]
+async fn payment_fails_if_airdrop_account_is_empty() {
+    let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
+        setup(Amount::ONE).await;
+
+    let claimer_chain = validator.new_chain().await;
+    let claimer_account = fungible::Account {
+        chain_id: claimer_chain.id(),
+        owner: AccountOwner::from(claimer_chain.public_key()),
+    };
+
+    claimer_chain.register_application(application_id).await;
+    claimer_chain
+        .add_block(|block| {
+            block.with_operation(
+                application_id,
+                AirDropClaim {
+                    id: AirDropId::from(b"first airdrop"),
+                    destination: claimer_account,
+                },
+            );
+        })
+        .await;
+    airdrop_chain.handle_received_messages().await;
+
+    let late_claimer_chain = validator.new_chain().await;
+    let late_claimer_account = fungible::Account {
+        chain_id: late_claimer_chain.id(),
+        owner: AccountOwner::from(late_claimer_chain.public_key()),
+    };
+
+    late_claimer_chain
+        .register_application(application_id)
+        .await;
+    late_claimer_chain
+        .add_block(|block| {
+            block.with_operation(
+                application_id,
+                AirDropClaim {
+                    id: AirDropId::from(b"second airdrop"),
+                    destination: late_claimer_account,
+                },
+            );
+        })
+        .await;
+    airdrop_chain.handle_received_messages().await;
+}
+
 /// Configures the test environment, deploying the airdrop application with some newly minted
 /// tokens.
 async fn setup(
