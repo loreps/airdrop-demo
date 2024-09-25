@@ -3,6 +3,8 @@
 
 #![cfg_attr(target_arch = "wasm32", no_main)]
 
+#[cfg(test)]
+mod service_unit_tests;
 mod state;
 
 use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
