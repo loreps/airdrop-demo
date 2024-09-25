@@ -5,9 +5,9 @@
 
 mod state;
 
-use airdrop_demo::Parameters;
-use async_graphql::{connection::EmptyFields, EmptyMutation, EmptySubscription, Schema};
-use linera_sdk::{base::WithServiceAbi, Service, ServiceRuntime};
+use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
+use async_graphql::{connection::EmptyFields, EmptySubscription, Schema};
+use linera_sdk::{abis::fungible, base::WithServiceAbi, bcs, Service, ServiceRuntime};
 
 #[derive(Clone)]
 pub struct ApplicationService;
@@ -26,9 +26,21 @@ impl Service for ApplicationService {
     }
 
     async fn handle_query(&self, query: Self::Query) -> Self::QueryResponse {
-        Schema::build(EmptyFields, EmptyMutation, EmptySubscription)
+        Schema::build(EmptyFields, Mutation, EmptySubscription)
             .finish()
             .execute(query)
             .await
+    }
+}
+
+/// Root type that defines all the GraphQL mutations available from the service.
+pub struct Mutation;
+
+#[async_graphql::Object]
+impl Mutation {
+    /// Claims an airdrop.
+    async fn air_drop_claim(&self, id: AirDropId, destination: fungible::Account) -> Vec<u8> {
+        bcs::to_bytes(&AirDropClaim { id, destination })
+            .expect("`AirDropClaim` should be serializable")
     }
 }

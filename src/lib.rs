@@ -26,7 +26,16 @@ pub struct Parameters {
 }
 
 /// The information necessary to identify an airdrop.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize, async_graphql::SimpleObject)]
+#[derive(
+    Clone,
+    Debug,
+    Deserialize,
+    Eq,
+    PartialEq,
+    Serialize,
+    async_graphql::InputObject,
+    async_graphql::SimpleObject,
+)]
 pub struct AirDropId {
     external_address: Vec<u8>,
 }
