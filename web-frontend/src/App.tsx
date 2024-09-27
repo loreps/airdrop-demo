@@ -1,6 +1,13 @@
 import React from 'react';
+import { gql } from '@apollo/client';
 import logo from './logo.svg';
 import './App.css';
+
+const CLAIM_AIRDROP = gql`
+    mutation AirDropClaim($id: AirDropId!, $destination: FungibleAccount!) {
+        airDropClaim(id: $id, destination: $destination)
+    }
+`;
 
 function App() {
   return (
