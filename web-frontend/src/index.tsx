@@ -8,6 +8,7 @@ import {
     useSearchParams,
 } from 'react-router-dom';
 import './index.css';
+import AccountProvider from './AccountProvider';
 import App from './App';
 import GraphQLProvider from './GraphQLProvider';
 import reportWebVitals from './reportWebVitals';
@@ -60,7 +61,9 @@ function GraphQLApp() {
 
     return (
         <GraphQLProvider chainId={chainId} applicationId={app} host={host} port={port}>
-            <App chainId={chainId} owner={owner} />
+            <AccountProvider>
+                <App chainId={chainId} owner={owner} />
+            </AccountProvider>
         </GraphQLProvider>
     );
 }

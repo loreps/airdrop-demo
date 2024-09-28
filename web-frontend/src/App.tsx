@@ -13,9 +13,10 @@ const CLAIM_AIRDROP = gql`
 type AppProps = {
   chainId: string,
   owner: string,
+  userAccount?: string,
 };
 
-function App({ chainId, owner }: AppProps) {
+function App({ chainId, owner, userAccount }: AppProps) {
   const [claim] = useMutation<AirDropClaimMutation>(CLAIM_AIRDROP, {
     onError: (error) => console.log(error),
     onCompleted: () => {},
