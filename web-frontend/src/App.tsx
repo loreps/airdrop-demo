@@ -39,7 +39,7 @@ function App({ chainId, owner, userAccount }: AppProps) {
     <div className="App">
       <header className="App-header">
         <form onSubmit={handleSubmit}>
-          <button type="submit">Claim</button>
+          <button type="submit" disabled={userAccount === null}>Claim</button>
         </form>
       </header>
     </div>
