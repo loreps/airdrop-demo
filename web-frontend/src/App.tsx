@@ -1,5 +1,6 @@
 import React from 'react';
 import { gql, useMutation } from '@apollo/client';
+import web3 from 'web3';
 import { AirDropClaimMutation } from './qql/graphql';
 import logo from './logo.svg';
 import './App.css';
@@ -22,11 +23,13 @@ function App({ chainId, owner, userAccount }: AppProps) {
     onCompleted: () => {},
   });
 
+  const externalAddress: Array<number> = Array.from(web3.utils.hexToBytes(userAccount || ''));
+
   const handleSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
     claim({
       variables: {
-        id: { externalAddress: [] },
+        id: { externalAddress },
         destination: {
           chainId: chainId,
           owner: `User:${owner}`,
