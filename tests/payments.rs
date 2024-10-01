@@ -24,17 +24,13 @@ async fn pays_valid_claim() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
+    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
+
     claimer_chain.register_application(application_id).await;
 
     let claim_certificate = claimer_chain
         .add_block(|block| {
-            block.with_operation(
-                application_id,
-                AirDropClaim {
-                    id: AirDropId::from(b"airdrop"),
-                    destination: claimer_account,
-                },
-            );
+            block.with_operation(application_id, claim);
         })
         .await;
 
@@ -80,15 +76,14 @@ async fn pays_multiple_claims() {
 
         claimer_chain.register_application(application_id).await;
 
+        let claim = prepare_airdrop_claim(
+            format!("airdrop #{claim_index}").as_bytes(),
+            claimer_account,
+        );
+
         let claim_certificate = claimer_chain
             .add_block(|block| {
-                block.with_operation(
-                    application_id,
-                    AirDropClaim {
-                        id: AirDropId::from(format!("airdrop #{claim_index}").as_bytes()),
-                        destination: claimer_account,
-                    },
-                );
+                block.with_operation(application_id, claim);
             })
             .await;
 
@@ -129,18 +124,13 @@ async fn rejects_replay_attacks_in_the_same_block() {
     let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
         setup(initial_tokens).await;
 
-    let airdrop_id = AirDropId::from(b"airdrop");
-
     let claimer_chain = validator.new_chain().await;
     let claimer_account = fungible::Account {
         chain_id: claimer_chain.id(),
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = AirDropClaim {
-        id: airdrop_id,
-        destination: claimer_account,
-    };
+    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -161,18 +151,13 @@ async fn rejects_replay_attacks_in_the_same_chain() {
     let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
         setup(initial_tokens).await;
 
-    let airdrop_id = AirDropId::from(b"airdrop");
-
     let claimer_chain = validator.new_chain().await;
     let claimer_account = fungible::Account {
         chain_id: claimer_chain.id(),
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = AirDropClaim {
-        id: airdrop_id,
-        destination: claimer_account,
-    };
+    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -204,10 +189,7 @@ async fn rejects_replay_attacks_in_different_chains() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = AirDropClaim {
-        id: AirDropId::from(b"airdrop"),
-        destination: claimer_account,
-    };
+    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -240,16 +222,12 @@ async fn payment_fails_if_airdrop_account_is_empty() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
+    let first_claim = prepare_airdrop_claim(b"first airdrop", claimer_account);
+
     claimer_chain.register_application(application_id).await;
     claimer_chain
         .add_block(|block| {
-            block.with_operation(
-                application_id,
-                AirDropClaim {
-                    id: AirDropId::from(b"first airdrop"),
-                    destination: claimer_account,
-                },
-            );
+            block.with_operation(application_id, first_claim);
         })
         .await;
     airdrop_chain.handle_received_messages().await;
@@ -260,18 +238,14 @@ async fn payment_fails_if_airdrop_account_is_empty() {
         owner: AccountOwner::from(late_claimer_chain.public_key()),
     };
 
+    let late_claim = prepare_airdrop_claim(b"second airdrop", late_claimer_account);
+
     late_claimer_chain
         .register_application(application_id)
         .await;
     late_claimer_chain
         .add_block(|block| {
-            block.with_operation(
-                application_id,
-                AirDropClaim {
-                    id: AirDropId::from(b"second airdrop"),
-                    destination: late_claimer_account,
-                },
-            );
+            block.with_operation(application_id, late_claim);
         })
         .await;
     airdrop_chain.handle_received_messages().await;
@@ -344,6 +318,14 @@ async fn setup(
         token_id,
         application_id,
     )
+}
+
+/// Creates an [`AirDropClaim`] for the test.
+fn prepare_airdrop_claim(seed_data: &[u8], destination: fungible::Account) -> AirDropClaim {
+    AirDropClaim {
+        id: AirDropId::from(seed_data),
+        destination,
+    }
 }
 
 /// Queries the token balance of an `owner` on a `chain`.
