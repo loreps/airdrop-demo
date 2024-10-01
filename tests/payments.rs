@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use airdrop_demo::{AirDropClaim, AirDropId, ApplicationAbi, Parameters};
+use alloy_primitives::Address;
 use async_graphql::InputType;
 use linera_sdk::{
     abis::fungible::{self, FungibleTokenAbi},
@@ -322,8 +323,10 @@ async fn setup(
 
 /// Creates an [`AirDropClaim`] for the test.
 fn prepare_airdrop_claim(seed_data: &[u8], destination: fungible::Account) -> AirDropClaim {
+    let ethereum_address = Address::right_padding_from(seed_data);
+
     AirDropClaim {
-        id: AirDropId::from(seed_data),
+        id: AirDropId::from(ethereum_address),
         destination,
     }
 }

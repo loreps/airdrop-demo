@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
+use alloy_primitives::Address;
 use linera_sdk::{
     abis::fungible::{self, Account, FungibleResponse},
     base::{
@@ -20,7 +21,7 @@ use super::{state::Application, ApplicationContract, ApprovedAirDrop};
 #[test]
 fn accepts_new_claim() {
     let mut contract = create_and_instantiate_contract();
-    let airdrop_id = AirDropId::from(b"airdrop");
+    let airdrop_id = AirDropId::from(Address::random());
     let destination_account = create_dummy_destination(0);
 
     let claim = AirDropClaim {
@@ -52,7 +53,7 @@ fn accepts_new_claim() {
 #[test]
 fn pays_accepted_airdrop() {
     let mut contract = create_and_instantiate_contract();
-    let airdrop_id = AirDropId::from(b"airdrop");
+    let airdrop_id = AirDropId::from(Address::random());
     let amount = Amount::from_tokens(11);
     let destination = create_dummy_destination(0);
 
@@ -90,7 +91,7 @@ fn pays_accepted_airdrop() {
 #[should_panic(expected = "Airdrop has already been paid")]
 fn rejects_repeated_airdrop() {
     let mut contract = create_and_instantiate_contract();
-    let airdrop_id = AirDropId::from(b"airdrop");
+    let airdrop_id = AirDropId::from(Address::random());
     let amount = Amount::from_tokens(11);
     let first_destination = create_dummy_destination(0);
     let second_destination = create_dummy_destination(1);

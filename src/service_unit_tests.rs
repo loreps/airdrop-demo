@@ -1,7 +1,8 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use airdrop_demo::AirDropClaim;
+use airdrop_demo::{AirDropClaim, AirDropId};
+use alloy_primitives::Address;
 use linera_sdk::{
     abis::fungible,
     base::{AccountOwner, ChainId, CryptoHash, Owner},
@@ -17,15 +18,15 @@ use super::ApplicationService;
 fn mutation_generates_air_drop_claim() {
     let service = ApplicationService;
 
-    let id = [1, 2, 3];
     let chain_id = ChainId(CryptoHash::test_hash("chain ID"));
     let claimer = AccountOwner::User(Owner(CryptoHash::test_hash("claimer")));
+    let address = Address::random();
 
     let json_query = format!(
         "{{ \"query\":
             \"mutation {{ \
                 airDropClaim( \
-                    id: {{ externalAddress: {id:?} }}, \
+                    id: \\\"{address:?}\\\", \
                     destination: {{ \
                         chainId: \\\"{chain_id}\\\", \
                         owner: \\\"{claimer}\\\" \
@@ -64,7 +65,7 @@ fn mutation_generates_air_drop_claim() {
         .expect("Failed to deserialize returned operation");
 
     let expected_operation = AirDropClaim {
-        id: id.into(),
+        id: AirDropId::from(address),
         destination: fungible::Account {
             chain_id,
             owner: claimer,
