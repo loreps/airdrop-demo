@@ -16,9 +16,10 @@ type AppProps = {
   chainId: string,
   owner: string,
   userAccount?: string,
+  web3Provider?: EIP6963ProviderDetail,
 };
 
-function App({ appId, chainId, owner, userAccount }: AppProps) {
+function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
   const [claim] = useMutation<AirDropClaimMutation>(CLAIM_AIRDROP, {
     onError: (error) => console.log(error),
     onCompleted: () => {},

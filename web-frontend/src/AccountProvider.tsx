@@ -32,9 +32,9 @@ function AccountProvider({ children }: AccountProviderProps) {
         }
     }
 
-    if (userAccount !== null) {
+    if (userAccount !== null && selectedProvider !== null) {
         let elements = React.Children.map(children, (child) => {
-            return React.cloneElement(child, { userAccount });
+            return React.cloneElement(child, { userAccount, web3Provider: selectedProvider });
         });
 
         return (<>{elements}</>);
