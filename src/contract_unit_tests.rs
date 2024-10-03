@@ -25,7 +25,7 @@ fn accepts_new_claim() {
     let destination_account = create_dummy_destination(0);
 
     let claim = AirDropClaim {
-        id: airdrop_id.clone(),
+        id: airdrop_id,
         destination: destination_account,
     };
 
@@ -97,7 +97,7 @@ fn rejects_repeated_airdrop() {
     let second_destination = create_dummy_destination(1);
 
     let first_claim = ApprovedAirDrop {
-        id: airdrop_id.clone(),
+        id: airdrop_id,
         amount,
         destination: first_destination,
     };

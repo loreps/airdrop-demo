@@ -29,7 +29,7 @@ pub struct Parameters {
 }
 
 /// The information necessary to identify an airdrop.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AirDropId {
     external_address: Address,
 }
