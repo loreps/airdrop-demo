@@ -62,7 +62,7 @@ function GraphQLApp() {
     return (
         <GraphQLProvider chainId={chainId} applicationId={app} host={host} port={port}>
             <AccountProvider>
-                <App chainId={chainId} owner={owner} />
+                <App appId={app} chainId={chainId} owner={owner} />
             </AccountProvider>
         </GraphQLProvider>
     );
