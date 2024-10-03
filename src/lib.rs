@@ -83,7 +83,9 @@ impl async_graphql::ScalarType for AirDropId {
 }
 
 /// An airdrop claim.
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize, async_graphql::SimpleObject)]
+#[derive(
+    Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize, async_graphql::SimpleObject,
+)]
 pub struct AirDropClaim {
     pub id: AirDropId,
     pub destination: Account,

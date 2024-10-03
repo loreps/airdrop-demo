@@ -137,7 +137,7 @@ async fn rejects_replay_attacks_in_the_same_block() {
     claimer_chain
         .add_block(|block| {
             block
-                .with_operation(application_id, claim.clone())
+                .with_operation(application_id, claim)
                 .with_operation(application_id, claim);
         })
         .await;
@@ -163,7 +163,7 @@ async fn rejects_replay_attacks_in_the_same_chain() {
     claimer_chain.register_application(application_id).await;
     claimer_chain
         .add_block(|block| {
-            block.with_operation(application_id, claim.clone());
+            block.with_operation(application_id, claim);
         })
         .await;
     airdrop_chain.handle_received_messages().await;
