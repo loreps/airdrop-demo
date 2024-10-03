@@ -44,7 +44,9 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
     <div className="App">
       <header className="App-header">
         <form onSubmit={handleSubmit}>
-          <button type="submit" disabled={userAccount === null}>Claim</button>
+          <button type="submit" disabled={userAccount == null || web3Provider == null}>
+            Claim
+          </button>
         </form>
       </header>
     </div>
