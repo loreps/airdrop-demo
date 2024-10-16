@@ -4,21 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloy-primitives = { version = "0.8.5", features = ["serde"] }
+alloy-primitives = { version = "0.8.6", default-features = false, features = ["k256", "serde"] }
 alloy-sol-types = { version = "0.8.6", default-features = false }
 async-graphql = { version = "=7.0.2", default-features = false }
 async-graphql-derive = { version = "=7.0.2", default-features = false }
 hex = "0.4.3"
 indexmap = "2.6.0"
-linera-sdk = "0.12.0"
+linera-sdk = { version = "0.13.0", git = "https://github.com/jvff/linera-protocol.git", rev = "d3d85f5a1b" }
 serde = { version = "1.0.210", features = ["derive"] }
 
 [dev-dependencies]
-alloy-primitives = { version = "0.8.5", features = ["getrandom"] }
-linera-sdk = { version = "0.12.0", features = ["test"] }
+alloy-primitives = { version = "0.8.6", default-features = false, features = ["getrandom"] }
+linera-sdk = { version = "0.13.0", features = ["test"], git = "https://github.com/jvff/linera-protocol.git", rev = "d3d85f5a1b"  }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-linera-sdk = { version = "0.12.0", features = ["test", "wasmer"] }
+linera-sdk = { version = "0.13.0", features = ["test", "wasmer"], git = "https://github.com/jvff/linera-protocol.git", rev = "d3d85f5a1b"  }
 tokio = "1.39.3"
 
 [[bin]]

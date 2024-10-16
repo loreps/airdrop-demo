@@ -5,13 +5,16 @@ pub(crate) mod signature_payload;
 
 use std::str::FromStr;
 
-use alloy_primitives::{Address, Signature};
+use alloy_primitives::{Address, Signature, SignatureError};
+use alloy_sol_types::SolStruct;
 use indexmap::IndexMap;
 use linera_sdk::{
     abis::fungible::{Account, FungibleTokenAbi},
     base::{ApplicationId, ContractAbi, ServiceAbi},
 };
 use serde::{Deserialize, Serialize};
+
+use self::signature_payload::AIRDROP_CLAIM_DOMAIN;
 
 pub struct ApplicationAbi;
 
@@ -91,6 +94,20 @@ pub struct AirDropClaim {
     pub id: AirDropId,
     pub signature: Signature,
     pub destination: Account,
+}
+
+impl AirDropClaim {
+    /// Returns the signer's Ethereum [`Address`] for this [`AirDropClaim`].
+    pub fn signer_address(
+        &self,
+        application_id: ApplicationId<ApplicationAbi>,
+    ) -> Result<Address, SignatureError> {
+        let payload = signature_payload::AirDropClaim::new(application_id, &self.destination);
+
+        let hash = payload.eip712_signing_hash(&AIRDROP_CLAIM_DOMAIN);
+
+        self.signature.recover_address_from_prehash(&hash)
+    }
 }
 
 #[async_graphql::Scalar]
