@@ -1,6 +1,6 @@
 import React from 'react';
 import { gql, useMutation } from '@apollo/client';
-import web3 from 'web3';
+import web3, { Web3 } from 'web3';
 import { AirDropClaimMutation } from './qql/graphql';
 import logo from './logo.svg';
 import './App.css';
@@ -10,6 +10,8 @@ const CLAIM_AIRDROP = gql`
         airDropClaim(destination: $destination, signature: $signature, apiToken: $apiToken)
     }
 `;
+
+const ETHEREUM_MAINNET_CHAIN_ID = 1;
 
 type AppProps = {
   appId: string,
@@ -27,18 +29,59 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
 
   const externalAddress: Array<number> = Array.from(web3.utils.hexToBytes(userAccount || ''));
 
+  const claimer = {
+    chainId,
+    owner: `User:${owner}`,
+  };
+
   const handleSubmit = (event: { preventDefault: () => void }) => {
     event.preventDefault();
-    claim({
-      variables: {
-        signature: "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        destination: {
-          chainId: chainId,
-          owner: `User:${owner}`,
-        },
-        apiToken: "API Token",
+
+    if (userAccount == null) {
+      throw Error('Missing user account. The Claim button should have been disabled');
+    }
+    if (web3Provider == null) {
+      throw Error('Missing Web3 provider. The Claim button should have been disabled');
+    }
+
+    const web3 = new Web3(web3Provider.provider);
+
+    web3.eth.signTypedData(userAccount, {
+      domain: {
+        name: "Linera AirDrop demo",
+        version: "0.0.1",
+        chainId: ETHEREUM_MAINNET_CHAIN_ID,
       },
-    }).then((result) => console.log("Claimed " + result));
+      primaryType: "AirDropClaim",
+      types: {
+        EIP712Domain: [
+          { name: "name", type: "string" },
+          { name: "version", type: "string" },
+          { name: "chainId", type: "uint256" },
+        ],
+        AirDropClaim: [
+          { name: "appId", type: "string" },
+          { name: "claimer", type: "FungibleAccount" },
+        ],
+        FungibleAccount: [
+          { name: "chainId", type: "string" },
+          { name: "owner", type: "string" },
+        ],
+      },
+      message: {
+        appId,
+        claimer,
+      },
+    }).then((signature) => {
+        claim({
+          variables: {
+            signature,
+            destination: claimer,
+          },
+        }).then((result) => console.log("Claimed " + result));
+    }).catch((error: any) => {
+        console.log("Failed to obtain signature: " + error);
+    });
   };
 
   return (
