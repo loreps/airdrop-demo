@@ -5,8 +5,10 @@ edition = "2021"
 
 [dependencies]
 alloy-primitives = { version = "0.8.5", features = ["serde"] }
+alloy-sol-types = { version = "0.8.6", default-features = false }
 async-graphql = { version = "=7.0.2", default-features = false }
 async-graphql-derive = { version = "=7.0.2", default-features = false }
+hex = "0.4.3"
 indexmap = "2.6.0"
 linera-sdk = "0.12.0"
 serde = { version = "1.0.210", features = ["derive"] }

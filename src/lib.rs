@@ -1,6 +1,8 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+pub(crate) mod signature_payload;
+
 use std::str::FromStr;
 
 use alloy_primitives::Address;
