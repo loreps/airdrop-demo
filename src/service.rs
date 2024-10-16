@@ -42,7 +42,16 @@ pub struct Mutation;
 impl Mutation {
     /// Claims an airdrop.
     async fn air_drop_claim(&self, id: AirDropId, destination: fungible::Account) -> Vec<u8> {
-        bcs::to_bytes(&AirDropClaim { id, destination })
-            .expect("`AirDropClaim` should be serializable")
+        let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
+            000000000000000000000000000000000000000000000000000000000000000000"
+            .parse()
+            .expect("Dummy signature is invalid");
+
+        bcs::to_bytes(&AirDropClaim {
+            id,
+            signature,
+            destination,
+        })
+        .expect("`AirDropClaim` should be serializable")
     }
 }

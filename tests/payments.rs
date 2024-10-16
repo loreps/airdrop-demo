@@ -325,8 +325,14 @@ async fn setup(
 fn prepare_airdrop_claim(seed_data: &[u8], destination: fungible::Account) -> AirDropClaim {
     let ethereum_address = Address::right_padding_from(seed_data);
 
+    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
+        000000000000000000000000000000000000000000000000000000000000000000"
+        .parse()
+        .expect("Dummy signature is invalid");
+
     AirDropClaim {
         id: AirDropId::from(ethereum_address),
+        signature,
         destination,
     }
 }

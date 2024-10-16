@@ -24,8 +24,14 @@ fn accepts_new_claim() {
     let airdrop_id = AirDropId::from(Address::random());
     let destination_account = create_dummy_destination(0);
 
+    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
+        000000000000000000000000000000000000000000000000000000000000000000"
+        .parse()
+        .expect("Dummy signature is invalid");
+
     let claim = AirDropClaim {
         id: airdrop_id,
+        signature,
         destination: destination_account,
     };
 

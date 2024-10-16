@@ -64,8 +64,14 @@ fn mutation_generates_air_drop_claim() {
     let operation = bcs::from_bytes::<AirDropClaim>(&serialized_operation)
         .expect("Failed to deserialize returned operation");
 
+    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
+        000000000000000000000000000000000000000000000000000000000000000000"
+        .parse()
+        .expect("Dummy signature is invalid");
+
     let expected_operation = AirDropClaim {
         id: AirDropId::from(address),
+        signature,
         destination: fungible::Account {
             chain_id,
             owner: claimer,

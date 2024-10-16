@@ -5,7 +5,7 @@ pub(crate) mod signature_payload;
 
 use std::str::FromStr;
 
-use alloy_primitives::Address;
+use alloy_primitives::{Address, Signature};
 use indexmap::IndexMap;
 use linera_sdk::{
     abis::fungible::{Account, FungibleTokenAbi},
@@ -89,6 +89,7 @@ impl async_graphql::ScalarType for AirDropId {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AirDropClaim {
     pub id: AirDropId,
+    pub signature: Signature,
     pub destination: Account,
 }
 
@@ -101,7 +102,8 @@ impl async_graphql::ScalarType for AirDropClaim {
 
         if fields.len() != 2 {
             return Err(async_graphql::InputValueError::custom(
-                "`AirDropClaim` object must have exactly two fields: `id` and `destination`",
+                "`AirDropClaim` object must have exactly three fields: \
+                `id`, `signature` and `destination`",
             ));
         }
 
@@ -116,6 +118,24 @@ impl async_graphql::ScalarType for AirDropClaim {
             Err(error) => return Err(error.propagate()),
         };
 
+        let Some(signature_value) = fields.swap_remove("signature") else {
+            return Err(async_graphql::InputValueError::custom(
+                "`AirDropClaim` object is missing an `signature` field",
+            ));
+        };
+
+        let async_graphql::Value::String(signature_string) = signature_value else {
+            return Err(async_graphql::InputValueError::custom(
+                "`AirDropClaim`'s `signature` is not a string",
+            ));
+        };
+
+        let signature = Signature::from_str(&signature_string).map_err(|_| {
+            async_graphql::InputValueError::custom(
+                "`AirDropClaim`'s `signature` is not a valid signature string",
+            )
+        })?;
+
         let Some(destination_value) = fields.swap_remove("destination") else {
             return Err(async_graphql::InputValueError::custom(
                 "`AirDropClaim` object is missing an `destination` field",
@@ -128,16 +148,23 @@ impl async_graphql::ScalarType for AirDropClaim {
                 Err(error) => return Err(error.propagate()),
             };
 
-        Ok(AirDropClaim { id, destination })
+        Ok(AirDropClaim {
+            signature,
+            id,
+            destination,
+        })
     }
 
     fn to_value(&self) -> async_graphql::Value {
         let mut fields = IndexMap::new();
 
         let id = async_graphql::ScalarType::to_value(&self.id);
+        let signature_string = hex::encode(self.signature.as_bytes());
+        let signature = async_graphql::ScalarType::to_value(&signature_string);
         let destination = async_graphql::InputType::to_value(&self.destination);
 
         fields.insert(async_graphql::Name::new("id"), id);
+        fields.insert(async_graphql::Name::new("signature"), signature);
         fields.insert(async_graphql::Name::new("destination"), destination);
 
         async_graphql::Value::Object(fields)
