@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub(crate) mod signature_payload;
+#[cfg(feature = "test")]
+pub mod test_utils;
 
 use std::str::FromStr;
 

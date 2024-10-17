@@ -1,14 +1,11 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
+use airdrop_demo::{test_utils::create_dummy_application_id, AirDropClaim, AirDropId, Parameters};
 use alloy_primitives::Address;
 use linera_sdk::{
     abis::fungible::{self, Account, FungibleResponse},
-    base::{
-        AccountOwner, Amount, ApplicationId, BlockHeight, BytecodeId, ChainId, CryptoHash,
-        Destination, MessageId, Owner,
-    },
+    base::{AccountOwner, Amount, ApplicationId, ChainId, CryptoHash, Destination, Owner},
     bcs,
     util::BlockingWait,
     views::View,
@@ -162,26 +159,6 @@ fn create_and_instantiate_contract() -> ApplicationContract {
 /// Creates a dummy [`ApplicationId`] to use as the Fungible Token for testing.
 fn create_dummy_token_id<Abi>() -> ApplicationId<Abi> {
     create_dummy_application_id("fungible token", 0)
-}
-
-/// Creates a dummy [`ApplicationId`] to use for testing.
-fn create_dummy_application_id<Abi>(name: &str, index: u32) -> ApplicationId<Abi> {
-    let bytecode_id = BytecodeId::new(
-        CryptoHash::test_hash(format!("{name} contract")),
-        CryptoHash::test_hash(format!("{name} service")),
-    );
-
-    let creation = MessageId {
-        chain_id: ChainId(CryptoHash::test_hash("chain")),
-        height: BlockHeight::ZERO,
-        index,
-    };
-
-    ApplicationId {
-        bytecode_id,
-        creation,
-    }
-    .with_abi()
 }
 
 /// Creates a dummy [`Account`] to use as a test destination for the airdropped tokens.
