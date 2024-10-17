@@ -10,6 +10,7 @@ async-graphql = { version = "=7.0.2", default-features = false }
 async-graphql-derive = { version = "=7.0.2", default-features = false }
 hex = "0.4.3"
 indexmap = "2.6.0"
+k256 = { version = "*", default-features = false }
 linera-sdk = { version = "0.13.0", git = "https://github.com/jvff/linera-protocol.git", rev = "d3d85f5a1b" }
 serde = { version = "1.0.210", features = ["derive"] }
 
