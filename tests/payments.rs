@@ -2,14 +2,16 @@
 
 use std::collections::BTreeMap;
 
-use airdrop_demo::{AirDropClaim, AirDropId, ApplicationAbi, Parameters};
+use airdrop_demo::{test_utils::sign_claim, AirDropClaim, ApplicationAbi, Parameters};
 use alloy_primitives::Address;
 use async_graphql::InputType;
+use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible::{self, FungibleTokenAbi},
     base::{AccountOwner, Amount, ApplicationId},
     test::{ActiveChain, TestValidator},
 };
+use rand::{rngs::StdRng, SeedableRng};
 
 /// Tests if a valid [`AirDropClaim`] is properly paid.
 #[tokio::test]
@@ -25,7 +27,7 @@ async fn pays_valid_claim() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
+    let claim = prepare_airdrop_claim(application_id, 0, claimer_account);
 
     claimer_chain.register_application(application_id).await;
 
@@ -77,10 +79,7 @@ async fn pays_multiple_claims() {
 
         claimer_chain.register_application(application_id).await;
 
-        let claim = prepare_airdrop_claim(
-            format!("airdrop #{claim_index}").as_bytes(),
-            claimer_account,
-        );
+        let claim = prepare_airdrop_claim(application_id, claim_index, claimer_account);
 
         let claim_certificate = claimer_chain
             .add_block(|block| {
@@ -112,7 +111,7 @@ async fn pays_multiple_claims() {
         assert_eq!(claimer_balance, Some(claim_amount));
         assert_eq!(
             airdrop_balance.unwrap_or(Amount::ZERO),
-            initial_tokens - claim_amount * claim_index
+            initial_tokens - claim_amount * claim_index.into()
         );
     }
 }
@@ -131,7 +130,7 @@ async fn rejects_replay_attacks_in_the_same_block() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
+    let claim = prepare_airdrop_claim(application_id, 0, claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -158,7 +157,7 @@ async fn rejects_replay_attacks_in_the_same_chain() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
+    let claim = prepare_airdrop_claim(application_id, 0, claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -190,7 +189,7 @@ async fn rejects_replay_attacks_in_different_chains() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let claim = prepare_airdrop_claim(b"airdrop", claimer_account);
+    let claim = prepare_airdrop_claim(application_id, 0, claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -223,7 +222,7 @@ async fn payment_fails_if_airdrop_account_is_empty() {
         owner: AccountOwner::from(claimer_chain.public_key()),
     };
 
-    let first_claim = prepare_airdrop_claim(b"first airdrop", claimer_account);
+    let first_claim = prepare_airdrop_claim(application_id, 1, claimer_account);
 
     claimer_chain.register_application(application_id).await;
     claimer_chain
@@ -239,7 +238,7 @@ async fn payment_fails_if_airdrop_account_is_empty() {
         owner: AccountOwner::from(late_claimer_chain.public_key()),
     };
 
-    let late_claim = prepare_airdrop_claim(b"second airdrop", late_claimer_account);
+    let late_claim = prepare_airdrop_claim(application_id, 2, late_claimer_account);
 
     late_claimer_chain
         .register_application(application_id)
@@ -322,16 +321,16 @@ async fn setup(
 }
 
 /// Creates an [`AirDropClaim`] for the test.
-fn prepare_airdrop_claim(seed_data: &[u8], destination: fungible::Account) -> AirDropClaim {
-    let ethereum_address = Address::right_padding_from(seed_data);
-
-    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
-        000000000000000000000000000000000000000000000000000000000000000000"
-        .parse()
-        .expect("Dummy signature is invalid");
+fn prepare_airdrop_claim(
+    application_id: ApplicationId<ApplicationAbi>,
+    seed_data: u64,
+    destination: fungible::Account,
+) -> AirDropClaim {
+    let signing_key = SigningKey::random(&mut StdRng::seed_from_u64(seed_data));
+    let signature = sign_claim(&signing_key, application_id, destination);
 
     AirDropClaim {
-        id: AirDropId::from(ethereum_address),
+        id: Address::from_private_key(&signing_key).into(),
         signature,
         destination,
     }

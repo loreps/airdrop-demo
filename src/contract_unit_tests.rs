@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use airdrop_demo::{
-    test_utils::create_dummy_application_id, AirDropClaim, AirDropId, ApplicationAbi, Parameters,
+    test_utils::{create_dummy_application_id, sign_claim},
+    AirDropClaim, AirDropId, ApplicationAbi, Parameters,
 };
 use alloy_primitives::Address;
+use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible::{self, Account, FungibleResponse},
     base::{AccountOwner, Amount, ApplicationId, ChainId, CryptoHash, Destination, Owner},
@@ -13,23 +15,21 @@ use linera_sdk::{
     views::View,
     Contract, ContractRuntime, Resources, SendMessageRequest,
 };
+use rand::rngs::OsRng;
 
 use super::{state::Application, ApplicationContract, ApprovedAirDrop};
 
 /// Tests if a valid airdrop claim is accepted and results in a message to execute the payment.
 #[test]
 fn accepts_new_claim() {
-    let (mut contract, _) = create_and_instantiate_contract();
-    let airdrop_id = AirDropId::from(Address::random());
+    let (mut contract, application_id) = create_and_instantiate_contract();
+    let signing_key = SigningKey::random(&mut OsRng);
+    let external_address = Address::from_private_key(&signing_key);
     let destination_account = create_dummy_destination(0);
-
-    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
-        000000000000000000000000000000000000000000000000000000000000000000"
-        .parse()
-        .expect("Dummy signature is invalid");
+    let signature = sign_claim(&signing_key, application_id, destination_account);
 
     let claim = AirDropClaim {
-        id: airdrop_id,
+        id: external_address.into(),
         signature,
         destination: destination_account,
     };
@@ -45,7 +45,7 @@ fn accepts_new_claim() {
         is_tracked: false,
         grant: Resources::default(),
         message: ApprovedAirDrop {
-            id: airdrop_id,
+            id: external_address.into(),
             amount: Amount::ONE,
             destination: destination_account,
         },

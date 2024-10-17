@@ -12,6 +12,7 @@ hex = "0.4.3"
 indexmap = "2.6.0"
 k256 = { version = "*", default-features = false }
 linera-sdk = { version = "0.13.0", git = "https://github.com/jvff/linera-protocol.git", rev = "d3d85f5a1b" }
+rand = { version = "0.8.5", default-features = false }
 serde = { version = "1.0.210", features = ["derive"] }
 
 [dev-dependencies]
