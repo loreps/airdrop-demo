@@ -54,10 +54,14 @@ impl Contract for ApplicationContract {
     async fn execute_operation(&mut self, claim: Self::Operation) -> Self::Response {
         let creator_chain = self.runtime.application_creator_chain_id();
         let amount = self.airdrop_amount(&claim).await;
+        let application_id = self.runtime.application_id();
+        let claimer = claim
+            .signer_address(application_id)
+            .expect("Failed to verify signature");
 
         self.runtime
             .prepare_message(ApprovedAirDrop {
-                id: claim.id,
+                id: claimer.into(),
                 amount,
                 destination: claim.destination,
             })
