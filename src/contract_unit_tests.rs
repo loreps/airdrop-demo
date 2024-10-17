@@ -1,7 +1,9 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use airdrop_demo::{test_utils::create_dummy_application_id, AirDropClaim, AirDropId, Parameters};
+use airdrop_demo::{
+    test_utils::create_dummy_application_id, AirDropClaim, AirDropId, ApplicationAbi, Parameters,
+};
 use alloy_primitives::Address;
 use linera_sdk::{
     abis::fungible::{self, Account, FungibleResponse},
@@ -17,7 +19,7 @@ use super::{state::Application, ApplicationContract, ApprovedAirDrop};
 /// Tests if a valid airdrop claim is accepted and results in a message to execute the payment.
 #[test]
 fn accepts_new_claim() {
-    let mut contract = create_and_instantiate_contract();
+    let (mut contract, _) = create_and_instantiate_contract();
     let airdrop_id = AirDropId::from(Address::random());
     let destination_account = create_dummy_destination(0);
 
@@ -55,7 +57,7 @@ fn accepts_new_claim() {
 /// Tests if an accepted airdrop leads to a call to transfer the tokens to the claimer.
 #[test]
 fn pays_accepted_airdrop() {
-    let mut contract = create_and_instantiate_contract();
+    let (mut contract, _) = create_and_instantiate_contract();
     let airdrop_id = AirDropId::from(Address::random());
     let amount = Amount::from_tokens(11);
     let destination = create_dummy_destination(0);
@@ -93,7 +95,7 @@ fn pays_accepted_airdrop() {
 #[test]
 #[should_panic(expected = "Airdrop has already been paid")]
 fn rejects_repeated_airdrop() {
-    let mut contract = create_and_instantiate_contract();
+    let (mut contract, _) = create_and_instantiate_contract();
     let airdrop_id = AirDropId::from(Address::random());
     let amount = Amount::from_tokens(11);
     let first_destination = create_dummy_destination(0);
@@ -136,12 +138,17 @@ fn rejects_repeated_airdrop() {
 }
 
 /// Creates an [`ApplicationContract`] instance and calls `instantiate` on it.
-fn create_and_instantiate_contract() -> ApplicationContract {
+///
+/// Returns the [`ApplicationContract`] instance along with a dummy [`ApplicationId`] that was
+/// assigned to it.
+fn create_and_instantiate_contract() -> (ApplicationContract, ApplicationId<ApplicationAbi>) {
+    let application_id = create_dummy_application_id("zk-airdrop", 1);
+
     let runtime = ContractRuntime::new()
         .with_application_parameters(Parameters {
             token_id: create_dummy_token_id(),
         })
-        .with_application_id(create_dummy_application_id("zk-airdrop", 1))
+        .with_application_id(application_id)
         .with_application_creator_chain_id(ChainId(CryptoHash::test_hash("creator chain")));
 
     let mut contract = ApplicationContract {
@@ -153,7 +160,7 @@ fn create_and_instantiate_contract() -> ApplicationContract {
 
     contract.instantiate(()).blocking_wait();
 
-    contract
+    (contract, application_id)
 }
 
 /// Creates a dummy [`ApplicationId`] to use as the Fungible Token for testing.
