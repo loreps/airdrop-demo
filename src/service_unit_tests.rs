@@ -1,8 +1,12 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use airdrop_demo::{AirDropClaim, AirDropId};
+use airdrop_demo::{
+    test_utils::{create_dummy_application_id, sign_claim},
+    AirDropClaim, AirDropId,
+};
 use alloy_primitives::Address;
+use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible,
     base::{AccountOwner, ChainId, CryptoHash, Owner},
@@ -10,6 +14,7 @@ use linera_sdk::{
     util::BlockingWait,
     Service,
 };
+use rand::rngs::OsRng;
 
 use super::ApplicationService;
 
@@ -20,13 +25,23 @@ fn mutation_generates_air_drop_claim() {
 
     let chain_id = ChainId(CryptoHash::test_hash("chain ID"));
     let claimer = AccountOwner::User(Owner(CryptoHash::test_hash("claimer")));
-    let address = Address::random();
+    let destination = fungible::Account {
+        chain_id,
+        owner: claimer,
+    };
+
+    let application_id = create_dummy_application_id("zk-airdrop", 1);
+    let signing_key = SigningKey::random(&mut OsRng);
+    let address = Address::from_private_key(&signing_key);
+    let signature = sign_claim(&signing_key, application_id, destination);
+    let signature_string = hex::encode(signature.as_bytes());
 
     let json_query = format!(
         "{{ \"query\":
             \"mutation {{ \
                 airDropClaim( \
                     id: \\\"{address:?}\\\", \
+                    signature: \\\"{signature_string}\\\", \
                     destination: {{ \
                         chainId: \\\"{chain_id}\\\", \
                         owner: \\\"{claimer}\\\" \
@@ -61,13 +76,10 @@ fn mutation_generates_air_drop_claim() {
         })
         .collect::<Vec<u8>>();
 
-    let operation = bcs::from_bytes::<AirDropClaim>(&serialized_operation)
+    let mut operation = bcs::from_bytes::<AirDropClaim>(&serialized_operation)
         .expect("Failed to deserialize returned operation");
 
-    let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
-        000000000000000000000000000000000000000000000000000000000000000000"
-        .parse()
-        .expect("Dummy signature is invalid");
+    operation.signature = operation.signature.with_parity_bool();
 
     let expected_operation = AirDropClaim {
         id: AirDropId::from(address),

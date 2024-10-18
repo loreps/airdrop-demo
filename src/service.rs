@@ -41,17 +41,21 @@ pub struct Mutation;
 #[async_graphql::Object]
 impl Mutation {
     /// Claims an airdrop.
-    async fn air_drop_claim(&self, id: AirDropId, destination: fungible::Account) -> Vec<u8> {
-        let signature = "0x0000000000000000000000000000000000000000000000000000000000000000\
-            000000000000000000000000000000000000000000000000000000000000000000"
+    async fn air_drop_claim(
+        &self,
+        id: AirDropId,
+        destination: fungible::Account,
+        signature: String,
+    ) -> async_graphql::Result<Vec<u8>> {
+        let signature = signature
             .parse()
-            .expect("Dummy signature is invalid");
+            .map_err(|_| async_graphql::Error::new("Signature could not be parsed"))?;
 
-        bcs::to_bytes(&AirDropClaim {
+        Ok(bcs::to_bytes(&AirDropClaim {
             id,
             signature,
             destination,
         })
-        .expect("`AirDropClaim` should be serializable")
+        .expect("`AirDropClaim` should be serializable"))
     }
 }

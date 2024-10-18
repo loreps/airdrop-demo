@@ -16,13 +16,9 @@ export type Scalars = {
   Float: { input: number; output: number; }
   /** An owner of an account. */
   AccountOwner: { input: any; output: any; }
+  AirDropId: { input: any; output: any; }
   /** The unique identifier (UID) of a chain. This is currently computed as the hash value of a ChainDescription. */
   ChainId: { input: any; output: any; }
-};
-
-/** The information necessary to identify an airdrop. */
-export type AirDropId = {
-  externalAddress: Array<Scalars['Int']['input']>;
 };
 
 /** Empty additional fields */
@@ -47,16 +43,18 @@ export type Mutation = {
 
 export type MutationAirDropClaimArgs = {
   destination: FungibleAccount;
-  id: AirDropId;
+  id: Scalars['AirDropId']['input'];
+  signature: Scalars['String']['input'];
 };
 
 export type AirDropClaimMutationVariables = Exact<{
-  id: AirDropId;
+  id: Scalars['AirDropId']['input'];
   destination: FungibleAccount;
+  signature: Scalars['String']['input'];
 }>;
 
 
 export type AirDropClaimMutation = { __typename?: 'Mutation', airDropClaim: Array<number> };
 
 
-export const AirDropClaimDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AirDropClaim"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AirDropId"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"destination"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FungibleAccount"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"airDropClaim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"destination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"destination"}}}]}]}}]} as unknown as DocumentNode<AirDropClaimMutation, AirDropClaimMutationVariables>;
+export const AirDropClaimDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AirDropClaim"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AirDropId"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"destination"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"FungibleAccount"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"signature"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"airDropClaim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"destination"},"value":{"kind":"Variable","name":{"kind":"Name","value":"destination"}}},{"kind":"Argument","name":{"kind":"Name","value":"signature"},"value":{"kind":"Variable","name":{"kind":"Name","value":"signature"}}}]}]}}]} as unknown as DocumentNode<AirDropClaimMutation, AirDropClaimMutationVariables>;
