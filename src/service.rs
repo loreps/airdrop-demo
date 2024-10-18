@@ -45,6 +45,7 @@ impl Mutation {
         &self,
         destination: fungible::Account,
         signature: String,
+        api_token: String,
     ) -> async_graphql::Result<Vec<u8>> {
         let signature = signature
             .parse()

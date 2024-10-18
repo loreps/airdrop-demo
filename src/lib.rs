@@ -120,7 +120,8 @@ impl async_graphql::ScalarType for AirDropClaim {
 
         if fields.len() != 2 {
             return Err(async_graphql::InputValueError::custom(
-                "`AirDropClaim` object must have exactly two fields: `signature` and `destination`",
+                "`AirDropClaim` object must have exactly three fields: \
+                `signature`, `destination` and `apiToken`",
             ));
         }
 
@@ -153,6 +154,18 @@ impl async_graphql::ScalarType for AirDropClaim {
                 Ok(destination) => destination,
                 Err(error) => return Err(error.propagate()),
             };
+
+        let Some(api_token_value) = fields.swap_remove("apiToken") else {
+            return Err(async_graphql::InputValueError::custom(
+                "`AirDropClaim` object is missing an `signature` field",
+            ));
+        };
+
+        let async_graphql::Value::String(api_token) = api_token_value else {
+            return Err(async_graphql::InputValueError::custom(
+                "`AirDropClaim`'s `apiToken` is not a string",
+            ));
+        };
 
         Ok(AirDropClaim {
             signature,

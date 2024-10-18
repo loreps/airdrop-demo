@@ -6,8 +6,8 @@ import logo from './logo.svg';
 import './App.css';
 
 const CLAIM_AIRDROP = gql`
-    mutation AirDropClaim($destination: FungibleAccount!, $signature: String!) {
-        airDropClaim(destination: $destination, signature: $signature)
+    mutation AirDropClaim($destination: FungibleAccount!, $signature: String!, $apiToken: String!) {
+        airDropClaim(destination: $destination, signature: $signature, apiToken: $apiToken)
     }
 `;
 
@@ -36,6 +36,7 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
           chainId: chainId,
           owner: `User:${owner}`,
         },
+        apiToken: "API Token",
       },
     }).then((result) => console.log("Claimed " + result));
   };

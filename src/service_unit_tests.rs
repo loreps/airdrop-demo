@@ -29,6 +29,7 @@ fn mutation_generates_air_drop_claim() {
         owner: claimer,
     };
 
+    let api_token = "API token".to_owned();
     let application_id = create_dummy_application_id("zk-airdrop", 1);
     let signing_key = SigningKey::random(&mut OsRng);
     let signature = sign_claim(&signing_key, application_id, destination);
@@ -42,7 +43,8 @@ fn mutation_generates_air_drop_claim() {
                     destination: {{ \
                         chainId: \\\"{chain_id}\\\", \
                         owner: \\\"{claimer}\\\" \
-                    }} \
+                    }}, \
+                    apiToken: \\\"{api_token}\\\" \
                 ) \
             }}\"
         }}"
