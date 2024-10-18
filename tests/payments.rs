@@ -135,7 +135,7 @@ async fn rejects_replay_attacks_in_the_same_block() {
     claimer_chain
         .add_block(|block| {
             block
-                .with_operation(application_id, claim)
+                .with_operation(application_id, claim.clone())
                 .with_operation(application_id, claim);
         })
         .await;
@@ -161,7 +161,7 @@ async fn rejects_replay_attacks_in_the_same_chain() {
     claimer_chain.register_application(application_id).await;
     claimer_chain
         .add_block(|block| {
-            block.with_operation(application_id, claim);
+            block.with_operation(application_id, claim.clone());
         })
         .await;
     airdrop_chain.handle_received_messages().await;
@@ -331,6 +331,7 @@ fn prepare_airdrop_claim(
     AirDropClaim {
         signature,
         destination,
+        api_token: "API token".to_owned(),
     }
 }
 

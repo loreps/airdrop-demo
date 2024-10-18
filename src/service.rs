@@ -54,6 +54,7 @@ impl Mutation {
         Ok(bcs::to_bytes(&AirDropClaim {
             signature,
             destination,
+            api_token,
         })
         .expect("`AirDropClaim` should be serializable"))
     }

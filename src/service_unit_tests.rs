@@ -86,6 +86,7 @@ fn mutation_generates_air_drop_claim() {
             chain_id,
             owner: claimer,
         },
+        api_token,
     };
 
     assert_eq!(operation, expected_operation);

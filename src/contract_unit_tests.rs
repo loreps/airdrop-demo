@@ -31,6 +31,7 @@ fn accepts_new_claim() {
     let claim = AirDropClaim {
         signature,
         destination: destination_account,
+        api_token: "API token".into(),
     };
 
     let () = contract.execute_operation(claim).blocking_wait();

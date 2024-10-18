@@ -91,10 +91,11 @@ impl async_graphql::ScalarType for AirDropId {
 }
 
 /// An airdrop claim.
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AirDropClaim {
     pub signature: Signature,
     pub destination: Account,
+    pub api_token: String,
 }
 
 impl AirDropClaim {
@@ -170,6 +171,7 @@ impl async_graphql::ScalarType for AirDropClaim {
         Ok(AirDropClaim {
             signature,
             destination,
+            api_token,
         })
     }
 
