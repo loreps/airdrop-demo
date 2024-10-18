@@ -93,7 +93,6 @@ impl async_graphql::ScalarType for AirDropId {
 /// An airdrop claim.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct AirDropClaim {
-    pub id: AirDropId,
     pub signature: Signature,
     pub destination: Account,
 }
@@ -121,21 +120,9 @@ impl async_graphql::ScalarType for AirDropClaim {
 
         if fields.len() != 2 {
             return Err(async_graphql::InputValueError::custom(
-                "`AirDropClaim` object must have exactly three fields: \
-                `id`, `signature` and `destination`",
+                "`AirDropClaim` object must have exactly two fields: `signature` and `destination`",
             ));
         }
-
-        let Some(id_value) = fields.swap_remove("id") else {
-            return Err(async_graphql::InputValueError::custom(
-                "`AirDropClaim` object is missing an `id` field",
-            ));
-        };
-
-        let id = match <AirDropId as async_graphql::ScalarType>::parse(id_value) {
-            Ok(id) => id,
-            Err(error) => return Err(error.propagate()),
-        };
 
         let Some(signature_value) = fields.swap_remove("signature") else {
             return Err(async_graphql::InputValueError::custom(
@@ -169,7 +156,6 @@ impl async_graphql::ScalarType for AirDropClaim {
 
         Ok(AirDropClaim {
             signature,
-            id,
             destination,
         })
     }
@@ -177,12 +163,10 @@ impl async_graphql::ScalarType for AirDropClaim {
     fn to_value(&self) -> async_graphql::Value {
         let mut fields = IndexMap::new();
 
-        let id = async_graphql::ScalarType::to_value(&self.id);
         let signature_string = hex::encode(self.signature.as_bytes());
         let signature = async_graphql::ScalarType::to_value(&signature_string);
         let destination = async_graphql::InputType::to_value(&self.destination);
 
-        fields.insert(async_graphql::Name::new("id"), id);
         fields.insert(async_graphql::Name::new("signature"), signature);
         fields.insert(async_graphql::Name::new("destination"), destination);
 

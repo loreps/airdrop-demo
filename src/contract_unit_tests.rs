@@ -29,7 +29,6 @@ fn accepts_new_claim() {
     let signature = sign_claim(&signing_key, application_id, destination_account);
 
     let claim = AirDropClaim {
-        id: external_address.into(),
         signature,
         destination: destination_account,
     };

@@ -3,9 +3,8 @@
 
 use airdrop_demo::{
     test_utils::{create_dummy_application_id, sign_claim},
-    AirDropClaim, AirDropId,
+    AirDropClaim,
 };
-use alloy_primitives::Address;
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible,
@@ -32,7 +31,6 @@ fn mutation_generates_air_drop_claim() {
 
     let application_id = create_dummy_application_id("zk-airdrop", 1);
     let signing_key = SigningKey::random(&mut OsRng);
-    let address = Address::from_private_key(&signing_key);
     let signature = sign_claim(&signing_key, application_id, destination);
     let signature_string = hex::encode(signature.as_bytes());
 
@@ -40,7 +38,6 @@ fn mutation_generates_air_drop_claim() {
         "{{ \"query\":
             \"mutation {{ \
                 airDropClaim( \
-                    id: \\\"{address:?}\\\", \
                     signature: \\\"{signature_string}\\\", \
                     destination: {{ \
                         chainId: \\\"{chain_id}\\\", \
@@ -82,7 +79,6 @@ fn mutation_generates_air_drop_claim() {
     operation.signature = operation.signature.with_parity_bool();
 
     let expected_operation = AirDropClaim {
-        id: AirDropId::from(address),
         signature,
         destination: fungible::Account {
             chain_id,

@@ -6,8 +6,8 @@ import logo from './logo.svg';
 import './App.css';
 
 const CLAIM_AIRDROP = gql`
-    mutation AirDropClaim($id: AirDropId!, $destination: FungibleAccount!, $signature: String!) {
-        airDropClaim(id: $id, destination: $destination, signature: $signature)
+    mutation AirDropClaim($destination: FungibleAccount!, $signature: String!) {
+        airDropClaim(destination: $destination, signature: $signature)
     }
 `;
 
@@ -31,7 +31,6 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
     event.preventDefault();
     claim({
       variables: {
-        id: { externalAddress },
         signature: "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
         destination: {
           chainId: chainId,

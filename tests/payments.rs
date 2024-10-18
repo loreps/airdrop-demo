@@ -3,7 +3,6 @@
 use std::collections::BTreeMap;
 
 use airdrop_demo::{test_utils::sign_claim, AirDropClaim, ApplicationAbi, Parameters};
-use alloy_primitives::Address;
 use async_graphql::InputType;
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
@@ -330,7 +329,6 @@ fn prepare_airdrop_claim(
     let signature = sign_claim(&signing_key, application_id, destination);
 
     AirDropClaim {
-        id: Address::from_private_key(&signing_key).into(),
         signature,
         destination,
     }

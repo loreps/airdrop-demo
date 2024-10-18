@@ -7,7 +7,7 @@
 mod service_unit_tests;
 mod state;
 
-use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
+use airdrop_demo::{AirDropClaim, Parameters};
 use async_graphql::{connection::EmptyFields, EmptySubscription, Schema};
 use linera_sdk::{abis::fungible, base::WithServiceAbi, bcs, Service, ServiceRuntime};
 
@@ -43,7 +43,6 @@ impl Mutation {
     /// Claims an airdrop.
     async fn air_drop_claim(
         &self,
-        id: AirDropId,
         destination: fungible::Account,
         signature: String,
     ) -> async_graphql::Result<Vec<u8>> {
@@ -52,7 +51,6 @@ impl Mutation {
             .map_err(|_| async_graphql::Error::new("Signature could not be parsed"))?;
 
         Ok(bcs::to_bytes(&AirDropClaim {
-            id,
             signature,
             destination,
         })
