@@ -8,6 +8,7 @@ mod contract_unit_tests;
 mod state;
 
 use airdrop_demo::{AirDropClaim, AirDropId, Parameters};
+use alloy_primitives::Address;
 use linera_sdk::{
     abis::fungible::{self, Account},
     base::{AccountOwner, Amount, WithContractAbi},
@@ -59,6 +60,8 @@ impl Contract for ApplicationContract {
             .signer_address(application_id)
             .expect("Failed to verify signature");
 
+        self.assert_eligibility(&claimer, &claim.api_token);
+
         self.runtime
             .prepare_message(ApprovedAirDrop {
                 id: claimer.into(),
@@ -92,6 +95,26 @@ impl Contract for ApplicationContract {
 }
 
 impl ApplicationContract {
+    /// Asserts that an [`Address`] is eligible for an airdrop.
+    pub fn assert_eligibility(&mut self, address: &Address, api_token: &str) {
+        let request = async_graphql::Request::new(format!(
+            r#"query {{ checkEligibility(address: "{address}", apiToken: "{api_token}") }}"#
+        ));
+
+        let application_id = self.runtime.application_id();
+        let response = self.runtime.query_service(application_id, request);
+
+        let async_graphql::Value::Object(data_object) = response.data else {
+            panic!("Unexpected response from `checkEligibility: {response:?}`");
+        };
+
+        let async_graphql::Value::Boolean(is_eligible) = data_object["checkEligibility"] else {
+            panic!("Missing `checkEligibility` result in response data: {data_object:?}");
+        };
+
+        assert!(is_eligible);
+    }
+
     /// Calculates the [`Amount`] to be airdropped for one [`AirDropClaim`].
     async fn airdrop_amount(&mut self, _claim: &AirDropClaim) -> Amount {
         Amount::ONE

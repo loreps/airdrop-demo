@@ -21,7 +21,7 @@ alloy-primitives = { version = "0.8.6", default-features = false, features = ["g
 linera-sdk = { version = "0.13.0", features = ["test"], git = "https://github.com/jvff/linera-protocol.git", rev = "2cc7ab54e6"  }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
-linera-sdk = { version = "0.13.0", features = ["test", "wasmer"], git = "https://github.com/jvff/linera-protocol.git", rev = "2cc7ab54e6"  }
+linera-sdk = { version = "0.13.0", features = ["test", "unstable-oracles", "wasmer"], git = "https://github.com/jvff/linera-protocol.git", rev = "2cc7ab54e6"  }
 tokio = "1.39.3"
 
 [features]

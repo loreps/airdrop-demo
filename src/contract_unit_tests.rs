@@ -6,6 +6,7 @@ use airdrop_demo::{
     AirDropClaim, AirDropId, ApplicationAbi, Parameters,
 };
 use alloy_primitives::Address;
+use indexmap::IndexMap;
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible::{self, Account, FungibleResponse},
@@ -28,10 +29,25 @@ fn accepts_new_claim() {
     let destination_account = create_dummy_destination(0);
     let signature = sign_claim(&signing_key, application_id, destination_account);
 
+    let api_token = "API token".to_owned();
+
+    contract.runtime.add_expected_service_query(
+        application_id,
+        async_graphql::Request::new(format!(
+            "query {{ \
+                checkEligibility(address: \"{external_address}\", apiToken: \"{api_token}\") \
+            }}"
+        )),
+        async_graphql::Response::new(IndexMap::from_iter([(
+            async_graphql::Name::new("checkEligibility"),
+            async_graphql::Value::Boolean(true),
+        )])),
+    );
+
     let claim = AirDropClaim {
         signature,
         destination: destination_account,
-        api_token: "API token".into(),
+        api_token,
     };
 
     let () = contract.execute_operation(claim).blocking_wait();
