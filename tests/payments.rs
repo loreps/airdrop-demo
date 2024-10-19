@@ -14,6 +14,7 @@ use rand::{rngs::StdRng, SeedableRng};
 
 /// Tests if a valid [`AirDropClaim`] is properly paid.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 async fn pays_valid_claim() {
     let initial_tokens = Amount::from_tokens(100);
     let (validator, airdrop_chain, airdrop_account, token_id, application_id) =
@@ -63,6 +64,7 @@ async fn pays_valid_claim() {
 
 /// Tests if multiple valid [`AirDropClaim`]s are properly paid.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 async fn pays_multiple_claims() {
     let initial_tokens = Amount::from_tokens(10);
     let (validator, airdrop_chain, airdrop_account, token_id, application_id) =
@@ -117,6 +119,7 @@ async fn pays_multiple_claims() {
 
 /// Tests if an attempt to replay a claim in the same block is rejected.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 #[should_panic]
 async fn rejects_replay_attacks_in_the_same_block() {
     let initial_tokens = Amount::from_tokens(100);
@@ -144,6 +147,7 @@ async fn rejects_replay_attacks_in_the_same_block() {
 
 /// Tests if an attempt to replay a claim in the same chain is rejected.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 #[should_panic]
 async fn rejects_replay_attacks_in_the_same_chain() {
     let initial_tokens = Amount::from_tokens(100);
@@ -176,6 +180,7 @@ async fn rejects_replay_attacks_in_the_same_chain() {
 
 /// Tests if an attempt to replain a claim in a different chain is rejected.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 #[should_panic]
 async fn rejects_replay_attacks_in_different_chains() {
     let initial_tokens = Amount::from_tokens(100);
@@ -210,6 +215,7 @@ async fn rejects_replay_attacks_in_different_chains() {
 
 /// Tests if airdrop claims are rejected when the airdrop account is empty.
 #[tokio::test]
+#[ignore = "Requires real network access"]
 #[should_panic]
 async fn payment_fails_if_airdrop_account_is_empty() {
     let (validator, airdrop_chain, _airdrop_account, _token_id, application_id) =
