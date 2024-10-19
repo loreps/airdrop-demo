@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { gql, useMutation } from '@apollo/client';
 import web3, { Web3 } from 'web3';
 import { AirDropClaimMutation } from './qql/graphql';
@@ -22,6 +22,7 @@ type AppProps = {
 };
 
 function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
+  const [apiToken, setApiToken] = useState("")
   const [claim] = useMutation<AirDropClaimMutation>(CLAIM_AIRDROP, {
     onError: (error) => console.log(error),
     onCompleted: () => {},
@@ -32,6 +33,10 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
   const claimer = {
     chainId,
     owner: `User:${owner}`,
+  };
+
+  const handleApiTokenChange = (event: { target: { value: React.SetStateAction<string> }; }) => {
+    setApiToken(event.target.value);
   };
 
   const handleSubmit = (event: { preventDefault: () => void }) => {
@@ -77,6 +82,7 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
           variables: {
             signature,
             destination: claimer,
+            apiToken,
           },
         }).then((result) => console.log("Claimed " + result));
     }).catch((error: any) => {
@@ -88,6 +94,12 @@ function App({ appId, chainId, owner, userAccount, web3Provider }: AppProps) {
     <div className="App">
       <header className="App-header">
         <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Space-and-Time API bearer token"
+            value={apiToken}
+            onChange={handleApiTokenChange}
+          />
           <button type="submit" disabled={userAccount == null || web3Provider == null}>
             Claim
           </button>
