@@ -1,6 +1,8 @@
 // Copyright (c) Zefchain Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::sync::{Arc, Mutex};
+
 use airdrop_demo::{
     test_utils::{create_dummy_application_id, sign_claim},
     AirDropClaim,
@@ -10,6 +12,7 @@ use linera_sdk::{
     abis::fungible,
     base::{AccountOwner, ChainId, CryptoHash, Owner},
     bcs, serde_json,
+    service::MockServiceRuntime,
     util::BlockingWait,
     Service,
 };
@@ -20,7 +23,7 @@ use super::ApplicationService;
 /// Tests if a GraphQL mutation can be used to create an [`AirDropClaim`] operation.
 #[test]
 fn mutation_generates_air_drop_claim() {
-    let service = ApplicationService;
+    let service = create_service();
 
     let chain_id = ChainId(CryptoHash::test_hash("chain ID"));
     let claimer = AccountOwner::User(Owner(CryptoHash::test_hash("claimer")));
@@ -90,4 +93,13 @@ fn mutation_generates_air_drop_claim() {
     };
 
     assert_eq!(operation, expected_operation);
+}
+
+/// Creates an [`ApplicationService`] instance.
+fn create_service() -> ApplicationService {
+    let runtime = MockServiceRuntime::new();
+
+    ApplicationService {
+        runtime: Arc::new(Mutex::new(runtime)),
+    }
 }

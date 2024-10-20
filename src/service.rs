@@ -7,12 +7,16 @@
 mod service_unit_tests;
 mod state;
 
+use std::sync::{Arc, Mutex};
+
 use airdrop_demo::{AirDropClaim, Parameters};
 use async_graphql::{connection::EmptyFields, EmptySubscription, Schema};
 use linera_sdk::{abis::fungible, base::WithServiceAbi, bcs, Service, ServiceRuntime};
 
 #[derive(Clone)]
-pub struct ApplicationService;
+pub struct ApplicationService {
+    runtime: Arc<Mutex<ServiceRuntime<Self>>>,
+}
 
 linera_sdk::service!(ApplicationService);
 
@@ -23,8 +27,10 @@ impl WithServiceAbi for ApplicationService {
 impl Service for ApplicationService {
     type Parameters = Parameters;
 
-    async fn new(_runtime: ServiceRuntime<Self>) -> Self {
-        ApplicationService
+    async fn new(runtime: ServiceRuntime<Self>) -> Self {
+        ApplicationService {
+            runtime: Arc::new(Mutex::new(runtime)),
+        }
     }
 
     async fn handle_query(&self, query: Self::Query) -> Self::QueryResponse {
