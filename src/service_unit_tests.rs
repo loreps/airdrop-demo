@@ -130,6 +130,48 @@ fn query_returns_address_is_not_eligible() {
     );
 }
 
+/// Tests if a GraphQL query reports query errors.
+#[test]
+fn query_returns_http_errors() {
+    let service = create_service();
+
+    let address = Address::random();
+    let api_token = "API token".to_owned();
+
+    let sql_query = format!(
+        "SELECT COUNT(*) FROM (SELECT * FROM ETHEREUM.NATIVE_WALLETS \
+        WHERE WALLET_ADDRESS = '0x{}' AND BALANCE > 0 LIMIT 1);",
+        hex::encode(address.as_slice())
+    );
+    let expected_query = format!(r#"{{ "sqlText": "{sql_query}" }}"#);
+
+    service
+        .runtime
+        .lock()
+        .expect("Test should abort on panic, so mutex should never be poisoned")
+        .add_expected_http_request(
+            http::Request::post(SXT_GATEWAY_URL, expected_query.as_bytes())
+                .with_header("Content-Type", b"application/json")
+                .with_header("Authorization", format!("Bearer {api_token}").as_bytes()),
+            http::Response::unauthorized(),
+        );
+
+    let json_query = format!(
+        "{{ \"query\":
+            \"query {{ \
+                checkEligibility(address: \\\"{address}\\\", apiToken: \\\"{api_token}\\\") \
+            }}\"
+        }}"
+    );
+
+    let query = serde_json::from_str(&json_query).expect("Failed to deserialize GraphQL query");
+
+    let response = service.handle_query(query).blocking_wait();
+
+    assert!(matches!(response.data, async_graphql::Value::Null));
+    assert_eq!(response.errors.len(), 1);
+}
+
 /// Tests if a GraphQL mutation can be used to create an [`AirDropClaim`] operation.
 #[test]
 fn mutation_generates_air_drop_claim() {
