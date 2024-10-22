@@ -16,6 +16,11 @@ use crate::{
     ApplicationAbi,
 };
 
+/// Creates a dummy [`ApplicationId`] to use as the Fungible Token for testing.
+pub fn create_dummy_token_id<Abi>() -> ApplicationId<Abi> {
+    create_dummy_application_id("fungible token", 0)
+}
+
 /// Creates a dummy [`ApplicationId`] to use for testing.
 pub fn create_dummy_application_id<Abi>(name: &str, index: u32) -> ApplicationId<Abi> {
     let bytecode_id = BytecodeId::new(

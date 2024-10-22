@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use airdrop_demo::{
-    test_utils::{create_dummy_application_id, sign_claim},
+    test_utils::{create_dummy_application_id, create_dummy_token_id, sign_claim},
     AirDropClaim, AirDropId, ApplicationAbi, Parameters,
 };
 use alloy_primitives::Address;
@@ -177,11 +177,6 @@ fn create_and_instantiate_contract() -> (ApplicationContract, ApplicationId<Appl
     contract.instantiate(()).blocking_wait();
 
     (contract, application_id)
-}
-
-/// Creates a dummy [`ApplicationId`] to use as the Fungible Token for testing.
-fn create_dummy_token_id<Abi>() -> ApplicationId<Abi> {
-    create_dummy_application_id("fungible token", 0)
 }
 
 /// Creates a dummy [`Account`] to use as a test destination for the airdropped tokens.
