@@ -7,9 +7,13 @@
 mod service_unit_tests;
 mod state;
 
-use std::sync::{Arc, Mutex};
+use std::{
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 
 use airdrop_demo::{AirDropClaim, Parameters};
+use alloy_primitives::U256;
 use async_graphql::{EmptySubscription, Schema};
 use linera_sdk::{
     abis::fungible, base::WithServiceAbi, bcs, ensure, http, serde_json, Service, ServiceRuntime,
@@ -56,21 +60,22 @@ impl Query {
     ) -> async_graphql::Result<bool> {
         let lowercase_address = address.to_lowercase();
 
-        let query = format!(
-            "{{ \"sqlText\": \"\
-                SELECT COUNT(*) FROM (\
-                    SELECT * FROM ETHEREUM.NATIVE_WALLETS \
-                    WHERE WALLET_ADDRESS = '{lowercase_address}' AND BALANCE > 0 \
-                    LIMIT 1\
-                );\
-            \" }}"
-        );
-
         let mut runtime = self
             .0
             .runtime
             .lock()
             .expect("Panics should abort service, so mutex should never be poisoned");
+
+        let snapshot_block = runtime.application_parameters().snapshot_block;
+        let query = format!(
+            "{{ \"sqlText\": \"\
+                SELECT BALANCE FROM ETHEREUM.NATIVE_WALLETS \
+                WHERE WALLET_ADDRESS = '{lowercase_address}' AND BLOCK_NUMBER <= {snapshot_block} \
+                ORDER BY BLOCK_NUMBER DESC \
+                LIMIT 1\
+                ;\
+            \" }}"
+        );
 
         let response = runtime.http_request(
             http::Request::post(SXT_GATEWAY_URL, query.as_bytes())
@@ -92,25 +97,36 @@ impl Query {
         .map_err(|_| async_graphql::Error::new("Invalid response from Space-and-Time Gateway"))?;
 
         ensure!(
-            result.len() == 1,
+            result.len() <= 1,
             async_graphql::Error::new(format!(
-                "Expected a single query result from Space-and-Time, got {}",
+                "Expected at most one query result from Space-and-Time, got {}",
                 result.len()
             ))
         );
-        ensure!(
-            result[0].len() == 1,
-            async_graphql::Error::new(format!(
-                "Expected a single result column from Space-and-Time query, got {}",
-                result[0].len()
-            ))
-        );
 
-        let query_result = result[0]["COUNT(1)"]
-            .as_i64()
-            .ok_or_else(|| async_graphql::Error::new("Query result is not a single integer"))?;
+        if result.is_empty() {
+            Ok(false)
+        } else {
+            ensure!(
+                result[0].len() == 1,
+                async_graphql::Error::new(format!(
+                    "Expected a single result column from Space-and-Time query, got {}",
+                    result[0].len()
+                ))
+            );
 
-        Ok(query_result > 0)
+            let balance_string = result[0]["BALANCE"].as_str().ok_or_else(|| {
+                async_graphql::Error::new(format!("Query result is not a string: {result:?}"))
+            })?;
+
+            let balance = U256::from_str(balance_string).map_err(|_| {
+                async_graphql::Error::new(format!(
+                    "Query result string is not a valid balance value: {balance_string:?}"
+                ))
+            })?;
+
+            Ok(balance > U256::from(0))
+        }
     }
 }
 

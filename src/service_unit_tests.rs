@@ -33,7 +33,7 @@ fn query_returns_address_is_eligible() {
         &service,
         &address,
         &api_token,
-        http::Response::ok(b"[{ \"COUNT(1)\": 1 }]"),
+        http::Response::ok(b"[{ \"BALANCE\": \"1\" }]"),
     );
 
     let response = service.handle_query(eligibility_query).blocking_wait();
@@ -53,7 +53,7 @@ fn query_returns_address_is_not_eligible() {
         &service,
         &address,
         &api_token,
-        http::Response::ok(b"[{ \"COUNT(1)\": 0 }]"),
+        http::Response::ok(b"[{ \"BALANCE\": \"0\" }]"),
     );
 
     let response = service.handle_query(eligibility_query).blocking_wait();
@@ -184,9 +184,12 @@ fn prepare_eligibility_query(
         .lock()
         .expect("Test should abort on panic, so mutex should never be poisoned");
 
+    let snapshot_block = runtime.application_parameters().snapshot_block;
     let sql_query = format!(
-        "SELECT COUNT(*) FROM (SELECT * FROM ETHEREUM.NATIVE_WALLETS \
-        WHERE WALLET_ADDRESS = '0x{}' AND BALANCE > 0 LIMIT 1);",
+        "SELECT BALANCE FROM ETHEREUM.NATIVE_WALLETS \
+        WHERE WALLET_ADDRESS = '0x{}' AND BLOCK_NUMBER <= {snapshot_block} \
+        ORDER BY BLOCK_NUMBER DESC \
+        LIMIT 1;",
         hex::encode(address.as_slice())
     );
     let expected_query = format!(r#"{{ "sqlText": "{sql_query}" }}"#);
