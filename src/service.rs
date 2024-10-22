@@ -66,7 +66,12 @@ impl Query {
             .lock()
             .expect("Panics should abort service, so mutex should never be poisoned");
 
-        let snapshot_block = runtime.application_parameters().snapshot_block;
+        let Parameters {
+            snapshot_block,
+            minimum_balance,
+            ..
+        } = runtime.application_parameters();
+
         let query = format!(
             "{{ \"sqlText\": \"\
                 SELECT BALANCE FROM ETHEREUM.NATIVE_WALLETS \
@@ -125,7 +130,7 @@ impl Query {
                 ))
             })?;
 
-            Ok(balance > U256::from(0))
+            Ok(balance >= minimum_balance)
         }
     }
 }
