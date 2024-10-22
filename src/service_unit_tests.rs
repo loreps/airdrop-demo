@@ -4,8 +4,8 @@
 use std::sync::{Arc, Mutex};
 
 use airdrop_demo::{
-    test_utils::{create_dummy_application_id, sign_claim},
-    AirDropClaim,
+    test_utils::{create_dummy_application_id, create_dummy_token_id, sign_claim},
+    AirDropClaim, Parameters,
 };
 use alloy_primitives::Address;
 use k256::ecdsa::SigningKey;
@@ -159,7 +159,10 @@ fn mutation_generates_air_drop_claim() {
 
 /// Creates an [`ApplicationService`] instance.
 fn create_service() -> ApplicationService {
-    let runtime = MockServiceRuntime::new();
+    let runtime = MockServiceRuntime::new().with_application_parameters(Parameters {
+        token_id: create_dummy_token_id(),
+        snapshot_block: 100,
+    });
 
     ApplicationService {
         runtime: Arc::new(Mutex::new(runtime)),
