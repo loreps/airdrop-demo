@@ -34,6 +34,7 @@ impl ServiceAbi for ApplicationAbi {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Parameters {
     pub token_id: ApplicationId<FungibleTokenAbi>,
+    pub snapshot_block: u64,
 }
 
 /// The information necessary to identify an airdrop.

@@ -292,7 +292,10 @@ async fn setup(
     let application_id = airdrop_chain
         .create_application(
             bytecode_id,
-            Parameters { token_id },
+            Parameters {
+                token_id,
+                snapshot_block: 250,
+            },
             (),
             vec![token_id.forget_abi()],
         )

@@ -163,6 +163,7 @@ fn create_and_instantiate_contract() -> (ApplicationContract, ApplicationId<Appl
     let runtime = ContractRuntime::new()
         .with_application_parameters(Parameters {
             token_id: create_dummy_token_id(),
+            snapshot_block: 100,
         })
         .with_application_id(application_id)
         .with_application_creator_chain_id(ChainId(CryptoHash::test_hash("creator chain")));
