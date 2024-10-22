@@ -30,6 +30,12 @@ because the service will handle the response and return only the relevant parts,
 tracked and agreeded upon between the validators. Any sources of non-determinism (e.g., the HTTP
 "Date" header in the response) is filtered out.
 
+## Web Interface
+
+A minimal web-interface to the application is provided. It communicates with an Ethereum wallet
+(currently it has only been tested with MetaMask) to sign a message using the claimer's address.
+This ensures that only the owner of that address can claim the airdrop tokens for that address.
+
 ## Future Work
 
 ### Verifying Proofs
