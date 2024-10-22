@@ -7,7 +7,7 @@ use airdrop_demo::{
     test_utils::{create_dummy_application_id, create_dummy_token_id, sign_claim},
     AirDropClaim, Parameters,
 };
-use alloy_primitives::Address;
+use alloy_primitives::{Address, U256};
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
     abis::fungible,
@@ -33,7 +33,7 @@ fn query_returns_address_is_eligible() {
         &service,
         &address,
         &api_token,
-        http::Response::ok(b"[{ \"BALANCE\": \"1\" }]"),
+        http::Response::ok(b"[{ \"BALANCE\": \"10\" }]"),
     );
 
     let response = service.handle_query(eligibility_query).blocking_wait();
@@ -162,6 +162,7 @@ fn create_service() -> ApplicationService {
     let runtime = MockServiceRuntime::new().with_application_parameters(Parameters {
         token_id: create_dummy_token_id(),
         snapshot_block: 100,
+        minimum_balance: U256::from(10),
     });
 
     ApplicationService {

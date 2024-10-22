@@ -7,7 +7,7 @@ pub mod test_utils;
 
 use std::str::FromStr;
 
-use alloy_primitives::{Address, Signature, SignatureError};
+use alloy_primitives::{Address, Signature, SignatureError, U256};
 use alloy_sol_types::SolStruct;
 use indexmap::IndexMap;
 use linera_sdk::{
@@ -35,6 +35,7 @@ impl ServiceAbi for ApplicationAbi {
 pub struct Parameters {
     pub token_id: ApplicationId<FungibleTokenAbi>,
     pub snapshot_block: u64,
+    pub minimum_balance: U256,
 }
 
 /// The information necessary to identify an airdrop.

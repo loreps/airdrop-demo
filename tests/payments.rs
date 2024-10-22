@@ -3,6 +3,7 @@
 use std::collections::BTreeMap;
 
 use airdrop_demo::{test_utils::sign_claim, AirDropClaim, ApplicationAbi, Parameters};
+use alloy_primitives::U256;
 use async_graphql::InputType;
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
@@ -295,6 +296,7 @@ async fn setup(
             Parameters {
                 token_id,
                 snapshot_block: 250,
+                minimum_balance: U256::from(25),
             },
             (),
             vec![token_id.forget_abi()],

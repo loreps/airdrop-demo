@@ -5,7 +5,7 @@ use airdrop_demo::{
     test_utils::{create_dummy_application_id, create_dummy_token_id, sign_claim},
     AirDropClaim, AirDropId, ApplicationAbi, Parameters,
 };
-use alloy_primitives::Address;
+use alloy_primitives::{Address, U256};
 use indexmap::IndexMap;
 use k256::ecdsa::SigningKey;
 use linera_sdk::{
@@ -164,6 +164,7 @@ fn create_and_instantiate_contract() -> (ApplicationContract, ApplicationId<Appl
         .with_application_parameters(Parameters {
             token_id: create_dummy_token_id(),
             snapshot_block: 100,
+            minimum_balance: U256::from(1),
         })
         .with_application_id(application_id)
         .with_application_creator_chain_id(ChainId(CryptoHash::test_hash("creator chain")));
