@@ -38,21 +38,7 @@ fn query_returns_address_is_eligible() {
 
     let response = service.handle_query(eligibility_query).blocking_wait();
 
-    assert_eq!(response.errors.len(), 0);
-
-    let async_graphql::Value::Object(data) = response.data else {
-        panic!("Unexpected response data: {response:?}");
-    };
-
-    assert_eq!(
-        data.len(),
-        1,
-        "Expected a single item in response data: {data:?}"
-    );
-    assert_eq!(
-        data["checkEligibility"],
-        async_graphql::Value::Boolean(true)
-    );
+    assert!(extract_eligibility_from(response));
 }
 
 /// Tests if a GraphQL query can deny an account's eligibility.
@@ -72,20 +58,7 @@ fn query_returns_address_is_not_eligible() {
 
     let response = service.handle_query(eligibility_query).blocking_wait();
 
-    assert_eq!(response.errors.len(), 0);
-
-    let async_graphql::Value::Object(data) = response.data else {
-        panic!("Unexpected response data: {response:?}");
-    };
-    assert_eq!(
-        data.len(),
-        1,
-        "Expected a single item in response data: {data:?}"
-    );
-    assert_eq!(
-        data["checkEligibility"],
-        async_graphql::Value::Boolean(false)
-    );
+    assert!(!extract_eligibility_from(response));
 }
 
 /// Tests if a GraphQL query reports query errors.
@@ -231,4 +204,31 @@ fn prepare_eligibility_query(
     );
 
     serde_json::from_str(&json_query).expect("Failed to deserialize GraphQL query")
+}
+
+/// Parses the [`async_graphql::Response`] of `checkEligibility` to extract the `true` or `false`
+/// value that indicates the eligibility.
+fn extract_eligibility_from(response: async_graphql::Response) -> bool {
+    assert_eq!(
+        response.errors.len(),
+        0,
+        "Errors reported from service: {:?}",
+        response.errors
+    );
+
+    let async_graphql::Value::Object(data) = response.data else {
+        panic!("Unexpected response data: {response:?}");
+    };
+
+    assert_eq!(
+        data.len(),
+        1,
+        "Expected a single item in response data: {data:?}"
+    );
+
+    let async_graphql::Value::Boolean(is_eligible) = data["checkEligibility"] else {
+        panic!("Unexpected `checkEligibility` result: {data:?}");
+    };
+
+    is_eligible
 }
