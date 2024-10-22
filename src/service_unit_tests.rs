@@ -33,7 +33,7 @@ fn query_returns_address_is_eligible() {
         &service,
         &address,
         &api_token,
-        http::Response::ok(b"[{ \"BALANCE\": \"10\" }]"),
+        http::Response::ok(format!("[{{ \"BALANCE\": \"{MINIMUM_BALANCE}\" }}]").as_bytes()),
     );
 
     let response = service.handle_query(eligibility_query).blocking_wait();
@@ -41,19 +41,22 @@ fn query_returns_address_is_eligible() {
     assert!(extract_eligibility_from(response));
 }
 
-/// Tests if a GraphQL query can deny an account's eligibility.
+/// Tests if a GraphQL query can deny an account's eligibility if it's balance was below the
+/// [`MINIMUM_BALANCE`].
 #[test]
-fn query_returns_address_is_not_eligible() {
+fn query_returns_address_with_insufficient_balance_is_not_eligible() {
     let service = create_service();
 
     let address = Address::random();
     let api_token = "API token".to_owned();
 
+    let insufficient_balance = MINIMUM_BALANCE - 1;
+
     let eligibility_query = prepare_eligibility_query(
         &service,
         &address,
         &api_token,
-        http::Response::ok(b"[{ \"BALANCE\": \"0\" }]"),
+        http::Response::ok(format!("[{{ \"BALANCE\": \"{insufficient_balance}\" }}]").as_bytes()),
     );
 
     let response = service.handle_query(eligibility_query).blocking_wait();
@@ -162,13 +165,16 @@ fn create_service() -> ApplicationService {
     let runtime = MockServiceRuntime::new().with_application_parameters(Parameters {
         token_id: create_dummy_token_id(),
         snapshot_block: 100,
-        minimum_balance: U256::from(10),
+        minimum_balance: U256::from(MINIMUM_BALANCE),
     });
 
     ApplicationService {
         runtime: Arc::new(Mutex::new(runtime)),
     }
 }
+
+/// The minimum balance to be eligible for an airdrop in the tests.
+const MINIMUM_BALANCE: usize = 10;
 
 /// Prepares an [`async_graphql::Request`] to the service to `checkEligibility` of an [`Address`].
 ///
