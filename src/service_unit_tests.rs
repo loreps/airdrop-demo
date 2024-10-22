@@ -64,6 +64,23 @@ fn query_returns_address_with_insufficient_balance_is_not_eligible() {
     assert!(!extract_eligibility_from(response));
 }
 
+/// Tests if a GraphQL query can deny an account's eligibility if it didn't exist at the snapshot
+/// block height.
+#[test]
+fn query_returns_address_thats_unknown_at_snapshot_is_not_eligible() {
+    let service = create_service();
+
+    let address = Address::random();
+    let api_token = "API token".to_owned();
+
+    let eligibility_query =
+        prepare_eligibility_query(&service, &address, &api_token, http::Response::ok(b"[]"));
+
+    let response = service.handle_query(eligibility_query).blocking_wait();
+
+    assert!(!extract_eligibility_from(response));
+}
+
 /// Tests if a GraphQL query reports query errors.
 #[test]
 fn query_returns_http_errors() {
