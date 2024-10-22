@@ -15,7 +15,28 @@ managing the tokens, and ensuring each claim is only paid once.
 This design allows the eligibility verification of an unlimited of claims to run in parallel, while
 the creator chain focuses on distributing tokens and preventing replay attacks.
 
+## Eligibility Verification
+
+For each claim, Space-and-Time's network is queried using the
+[Gateway](https://docs.spaceandtime.io/docs/secrets-proxy) to check that the claim is eligible to
+the airdrop. The query simply checks if the address had a minimum balance at a specific snapshot
+block height.
+
+In order to execute a claim, an API access token must be provided. This token is used by the client
+proposing the block as well as each validator that validates the block.
+
+The application performs the query from the contract using the service as an oracle. This is needed
+because the service will handle the response and return only the relevant parts, which is what is
+tracked and agreeded upon between the validators. Any sources of non-determinism (e.g., the HTTP
+"Date" header in the response) is filtered out.
+
 ## Future Work
+
+### Verifying Proofs
+
+Usage of the Gateway should be replaced with verification of the zero-knowledge proofs inside the
+application. This would remove the need of the API access token, and allow claimers to obtain query
+proofs through their preferred method.
 
 ### Sharding the Token Distribution
 
