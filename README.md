@@ -4,7 +4,7 @@ This is an example [Linera](https://linera.io) application that shows how to use
 [Space-and-Time](https://spaceandtime.io) in order to determine if an Ethereum address is eligible
 to an airdrop of some arbitrary tokens.
 
-## Application Design
+## Application Design        
 
 The microchain which instantiates the application becomes responsible for distributing tokens to the
 airdrop claimers. Any microchain can be used to claim an airdrop. When the `AirDropClaim` operation
